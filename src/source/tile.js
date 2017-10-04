@@ -81,8 +81,10 @@ class Tile {
     maskedBoundsBuffer: ?VertexBuffer;
     maskedIndexBuffer: ?IndexBuffer;
     segments: ?SegmentVector;
+    prepared: ?boolean
     request: any;
     texture: any;
+    demTexture: ?Texture;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
 
