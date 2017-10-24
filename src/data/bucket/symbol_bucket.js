@@ -2,9 +2,6 @@
 
 const Point = require('@mapbox/point-geometry');
 const {SegmentVector} = require('../segment');
-const VertexBuffer = require('../../gl/vertex_buffer');
-const IndexBuffer = require('../../gl/index_buffer');
-const Context = require('../../gl/context');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
 const {TriangleIndexArray, LineIndexArray} = require('../index_array_type');
@@ -28,6 +25,9 @@ import type {
     SerializedStructArray
 } from '../../util/struct_array';
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
+import type Context from '../../gl/context';
+import type IndexBuffer from '../../gl/index_buffer';
+import type VertexBuffer from '../../gl/vertex_buffer';
 import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
 import type {PossiblyEvaluatedPropertyValue} from '../../style/properties';
@@ -282,22 +282,22 @@ class SymbolBuffers {
     }
 
     upload(context: Context, dynamicIndexBuffer) {
-        this.layoutVertexBuffer = new VertexBuffer(context, this.layoutVertexArray);
-        this.indexBuffer = new IndexBuffer(context, this.indexArray, dynamicIndexBuffer);
+        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray);
+        this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
         this.programConfigurations.upload(context);
 
         if (this.programInterface.dynamicLayoutAttributes) {
-            this.dynamicLayoutVertexBuffer = new VertexBuffer(context, this.dynamicLayoutVertexArray, true);
+            this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, true);
         }
         if (this.programInterface.opacityAttributes) {
-            this.opacityVertexBuffer = new VertexBuffer(context, this.opacityVertexArray, true);
+            this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, true);
             // This is a performance hack so that we can write to opacityVertexArray with uint32s
             // even though the shaders read uint8s
             this.opacityVertexBuffer.itemSize = 1;
             this.opacityVertexBuffer.attributes = shaderOpacityAttributes;
         }
         if (this.programInterface.collisionAttributes) {
-            this.collisionVertexBuffer = new VertexBuffer(context, this.collisionVertexArray, true);
+            this.collisionVertexBuffer = context.createVertexBuffer(this.collisionVertexArray, true);
         }
     }
 

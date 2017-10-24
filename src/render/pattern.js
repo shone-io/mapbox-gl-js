@@ -41,7 +41,7 @@ exports.prepare = function (image: CrossFaded<string>, painter: Painter, program
     gl.uniform1f(program.uniforms.u_scale_b, image.toScale);
 
     gl.activeTexture(gl.TEXTURE0);
-    painter.imageManager.bind(gl);
+    painter.imageManager.bind(painter.context);
 };
 
 exports.setTile = function (tile: {coord: TileCoord, tileSize: number}, painter: Painter, program: Program) {

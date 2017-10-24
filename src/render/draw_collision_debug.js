@@ -10,7 +10,8 @@ const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 module.exports = drawCollisionDebug;
 
 function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>, drawCircles: boolean) {
-    const gl = painter.context.gl;
+    const context = painter.context;
+    const gl = context.gl;
     const program = drawCircles ? painter.useProgram('collisionCircle') : painter.useProgram('collisionBox');
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];

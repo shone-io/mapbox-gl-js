@@ -26,7 +26,7 @@ class Program {
                 source: {fragmentSource: string, vertexSource: string},
                 configuration: ProgramConfiguration,
                 showOverdrawInspector: boolean) {
-        const gl = this.gl = context.gl;
+        const gl = context.gl;
         this.program = gl.createProgram();
 
         const defines = configuration.defines().concat(

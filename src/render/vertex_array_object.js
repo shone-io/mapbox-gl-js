@@ -28,7 +28,7 @@ class VertexArrayObject {
         this.vao = null;
     }
 
-    bind(context: context,
+    bind(context: Context,
          program: Program,
          layoutVertexBuffer: VertexBuffer,
          indexBuffer: ?IndexBuffer,

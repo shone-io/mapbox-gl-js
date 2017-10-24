@@ -6,7 +6,6 @@ const SourceCache = require('../source/source_cache');
 const EXTENT = require('../data/extent');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const util = require('../util/util');
-const VertexBuffer = require('../gl/vertex_buffer');
 const VertexArrayObject = require('./vertex_array_object');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const PosArray = require('../data/pos_array');
@@ -39,6 +38,7 @@ import type LineAtlas from './line_atlas';
 import type Texture from './texture';
 import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';
+import type VertexBuffer from '../gl/vertex_buffer';
 
 export type RenderPass = '3d' | 'opaque' | 'translucent';
 
@@ -57,7 +57,7 @@ type PainterOptions = {
  * @private
  */
 class Painter {
-    gl: WebGLRenderingContext;
+    context: Context;
     transform: Transform;
     _tileTextures: { [number]: Array<Texture> };
     numSublayers: number;
@@ -160,7 +160,7 @@ class Painter {
         tileExtentArray.emplaceBack(EXTENT, 0);
         tileExtentArray.emplaceBack(0, EXTENT);
         tileExtentArray.emplaceBack(EXTENT, EXTENT);
-        this.tileExtentBuffer = new VertexBuffer(context, tileExtentArray);
+        this.tileExtentBuffer = context.createVertexBuffer(tileExtentArray);
         this.tileExtentVAO = new VertexArrayObject();
         this.tileExtentPatternVAO = new VertexArrayObject();
 
@@ -170,7 +170,7 @@ class Painter {
         debugArray.emplaceBack(EXTENT, EXTENT);
         debugArray.emplaceBack(0, EXTENT);
         debugArray.emplaceBack(0, 0);
-        this.debugBuffer = new VertexBuffer(context, debugArray);
+        this.debugBuffer = context.createVertexBuffer(debugArray);
         this.debugVAO = new VertexArrayObject();
 
         const rasterBoundsArray = new RasterBoundsArray();
@@ -178,7 +178,7 @@ class Painter {
         rasterBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
         rasterBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
         rasterBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
-        this.rasterBoundsBuffer = new VertexBuffer(context, rasterBoundsArray);
+        this.rasterBoundsBuffer = context.createVertexBuffer(rasterBoundsArray);
         this.rasterBoundsVAO = new VertexArrayObject();
 
         const viewportArray = new PosArray();
@@ -186,7 +186,7 @@ class Painter {
         viewportArray.emplaceBack(1, 0);
         viewportArray.emplaceBack(0, 1);
         viewportArray.emplaceBack(1, 1);
-        this.viewportBuffer = new VertexBuffer(context, viewportArray);
+        this.viewportBuffer = context.createVertexBuffer(viewportArray);
         this.viewportVAO = new VertexArrayObject();
 
         this.extTextureFilterAnisotropic = (
@@ -307,7 +307,7 @@ class Painter {
 
         this.lineAtlas = style.lineAtlas;
         this.imageManager = style.imageManager;
-        this.contextyphManager = style.glyphManager;
+        this.glyphManager = style.glyphManager;
 
         for (const id in style.sourceCaches) {
             const sourceCache = this.style.sourceCaches[id];

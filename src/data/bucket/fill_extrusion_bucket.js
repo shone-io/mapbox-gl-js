@@ -1,9 +1,6 @@
 // @flow
 
 const {SegmentVector, MAX_VERTEX_ARRAY_LENGTH} = require('../segment');
-const VertexBuffer = require('../../gl/vertex_buffer');
-const IndexBuffer = require('../../gl/index_buffer');
-const Context = require('../../gl/context');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
 const {TriangleIndexArray} = require('../index_array_type');
@@ -18,6 +15,9 @@ import type {Bucket, IndexedFeature, PopulateParameters, SerializedBucket} from 
 import type {ProgramInterface} from '../program_configuration';
 import type StyleLayer from '../../style/style_layer';
 import type {StructArray} from '../../util/struct_array';
+import type Context from '../../gl/context';
+import type IndexBuffer from '../../gl/index_buffer';
+import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
 
 const fillExtrusionInterface = {
@@ -110,8 +110,8 @@ class FillExtrusionBucket implements Bucket {
     }
 
     upload(context: Context) {
-        this.layoutVertexBuffer = new VertexBuffer(context, this.layoutVertexArray);
-        this.indexBuffer = new IndexBuffer(context, this.indexArray);
+        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray);
+        this.indexBuffer = context.createIndexBuffer(this.indexArray);
         this.programConfigurations.upload(context);
     }
 

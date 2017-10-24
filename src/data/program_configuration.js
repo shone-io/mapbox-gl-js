@@ -4,12 +4,13 @@ import type {GlobalProperties} from "../style-spec/expression/index";
 
 const createVertexArrayType = require('./vertex_array_type');
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
-const VertexBuffer = require('../gl/vertex_buffer');
 const Color = require('../style-spec/util/color');
 const Context = require('../gl/context');
 
 import type StyleLayer from '../style/style_layer';
 import type {ViewType, StructArray, SerializedStructArray, StructArrayTypeParameters} from '../util/struct_array';
+import type Context from '../gl/context';
+import type VertexBuffer from '../gl/vertex_buffer';
 import type Program from '../render/program';
 import type {Feature, SourceExpression, CompositeExpression} from '../style-spec/expression';
 import type {PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from '../style/properties';
@@ -401,7 +402,7 @@ class ProgramConfiguration {
 
     upload(context: Context) {
         if (this.paintVertexArray) {
-            this.paintVertexBuffer = new VertexBuffer(context, this.paintVertexArray);
+            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray);
         }
     }
 
