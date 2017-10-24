@@ -3,6 +3,7 @@
 const {SegmentVector} = require('../segment');
 const VertexBuffer = require('../../gl/vertex_buffer');
 const IndexBuffer = require('../../gl/index_buffer');
+const Context = require('../../gl/context');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
 const {LineIndexArray, TriangleIndexArray} = require('../index_array_type');
@@ -97,11 +98,11 @@ class FillBucket implements Bucket {
         };
     }
 
-    upload(gl: WebGLRenderingContext) {
-        this.layoutVertexBuffer = new VertexBuffer(gl, this.layoutVertexArray);
-        this.indexBuffer = new IndexBuffer(gl, this.indexArray);
-        this.indexBuffer2 = new IndexBuffer(gl, this.indexArray2);
-        this.programConfigurations.upload(gl);
+    upload(context: Context) {
+        this.layoutVertexBuffer = new VertexBuffer(context, this.layoutVertexArray);
+        this.indexBuffer = new IndexBuffer(context, this.indexArray);
+        this.indexBuffer2 = new IndexBuffer(context, this.indexArray2);
+        this.programConfigurations.upload(context);
     }
 
     destroy() {

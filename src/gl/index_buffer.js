@@ -3,6 +3,7 @@ const assert = require('assert');
 
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
 import type {SerializedStructArray} from '../util/struct_array';
+import type Context from '../gl/context';
 
 
 class IndexBuffer {
@@ -10,8 +11,8 @@ class IndexBuffer {
     buffer: WebGLBuffer;
     dynamicDraw: boolean;
 
-    constructor(gl: WebGLRenderingContext, array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
-        this.gl = gl;
+    constructor(context: Context, array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
+        const gl = this.gl = context.gl;
         this.buffer = gl.createBuffer();
         this.dynamicDraw = Boolean(dynamicDraw);
 

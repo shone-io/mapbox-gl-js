@@ -4,6 +4,7 @@ const Point = require('@mapbox/point-geometry');
 const {SegmentVector} = require('../segment');
 const VertexBuffer = require('../../gl/vertex_buffer');
 const IndexBuffer = require('../../gl/index_buffer');
+const Context = require('../../gl/context');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
 const {TriangleIndexArray, LineIndexArray} = require('../index_array_type');
@@ -280,23 +281,23 @@ class SymbolBuffers {
         };
     }
 
-    upload(gl: WebGLRenderingContext, dynamicIndexBuffer) {
-        this.layoutVertexBuffer = new VertexBuffer(gl, this.layoutVertexArray);
-        this.indexBuffer = new IndexBuffer(gl, this.indexArray, dynamicIndexBuffer);
-        this.programConfigurations.upload(gl);
+    upload(context: Context, dynamicIndexBuffer) {
+        this.layoutVertexBuffer = new VertexBuffer(context, this.layoutVertexArray);
+        this.indexBuffer = new IndexBuffer(context, this.indexArray, dynamicIndexBuffer);
+        this.programConfigurations.upload(context);
 
         if (this.programInterface.dynamicLayoutAttributes) {
-            this.dynamicLayoutVertexBuffer = new VertexBuffer(gl, this.dynamicLayoutVertexArray, true);
+            this.dynamicLayoutVertexBuffer = new VertexBuffer(context, this.dynamicLayoutVertexArray, true);
         }
         if (this.programInterface.opacityAttributes) {
-            this.opacityVertexBuffer = new VertexBuffer(gl, this.opacityVertexArray, true);
+            this.opacityVertexBuffer = new VertexBuffer(context, this.opacityVertexArray, true);
             // This is a performance hack so that we can write to opacityVertexArray with uint32s
             // even though the shaders read uint8s
             this.opacityVertexBuffer.itemSize = 1;
             this.opacityVertexBuffer.attributes = shaderOpacityAttributes;
         }
         if (this.programInterface.collisionAttributes) {
-            this.collisionVertexBuffer = new VertexBuffer(gl, this.collisionVertexArray, true);
+            this.collisionVertexBuffer = new VertexBuffer(context, this.collisionVertexArray, true);
         }
     }
 
@@ -587,11 +588,11 @@ class SymbolBucket implements Bucket {
         };
     }
 
-    upload(gl: WebGLRenderingContext) {
-        this.text.upload(gl, this.sortFeaturesByY);
-        this.icon.upload(gl, this.sortFeaturesByY);
-        this.collisionBox.upload(gl);
-        this.collisionCircle.upload(gl);
+    upload(context: Context) {
+        this.text.upload(context, this.sortFeaturesByY);
+        this.icon.upload(context, this.sortFeaturesByY);
+        this.collisionBox.upload(context);
+        this.collisionCircle.upload(context);
     }
 
     destroy() {

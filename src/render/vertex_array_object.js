@@ -5,6 +5,7 @@ const assert = require('assert');
 import type Program from './program';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
+import type Context from '../gl/context';
 
 class VertexArrayObject {
     boundProgram: ?Program;
@@ -27,7 +28,7 @@ class VertexArrayObject {
         this.vao = null;
     }
 
-    bind(gl: WebGLRenderingContext,
+    bind(context: context,
          program: Program,
          layoutVertexBuffer: VertexBuffer,
          indexBuffer: ?IndexBuffer,
@@ -35,6 +36,8 @@ class VertexArrayObject {
          vertexOffset: ?number,
          dynamicVertexBuffer: ?VertexBuffer,
          dynamicVertexBuffer2: ?VertexBuffer) {
+
+        const gl = context.gl;
 
         if (gl.extVertexArrayObject === undefined) {
             (gl: any).extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
@@ -72,7 +75,7 @@ class VertexArrayObject {
         }
     }
 
-    freshBind(gl: WebGLRenderingContext,
+    freshBind(gl: WebGLRenderingContext,    // TODO
               program: Program,
               layoutVertexBuffer: VertexBuffer,
               indexBuffer: ?IndexBuffer,

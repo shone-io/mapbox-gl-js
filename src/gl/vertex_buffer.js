@@ -7,6 +7,7 @@ import type {
 } from '../util/struct_array';
 
 import type Program from '../render/program';
+import type Context from '../gl/context';
 
 /**
  * @enum {string} AttributeType
@@ -33,19 +34,19 @@ class VertexBuffer {
     attributes: Array<StructArrayMember>;
     itemSize: number;
     dynamicDraw: ?boolean;
-    gl: WebGLRenderingContext;
+    gl: WebGLRenderingContext;  // TODO move out
     buffer: WebGLBuffer;
 
     /**
      * @param dynamicDraw Whether this buffer will be repeatedly updated.
      */
-    constructor(gl: WebGLRenderingContext, array: StructArray, dynamicDraw?: boolean) {
+    constructor(context: Context, array: StructArray, dynamicDraw?: boolean) {
         this.length = array.length;
         this.attributes = array.members;
         this.itemSize = array.bytesPerElement;
         this.dynamicDraw = dynamicDraw;
 
-        this.gl = gl;
+        const gl = this.gl = context.gl;
         this.buffer = gl.createBuffer();
         this.gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
         this.gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);

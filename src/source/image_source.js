@@ -187,7 +187,7 @@ class ImageSource extends Evented implements Source {
 
     prepare() {
         if (Object.keys(this.tiles).length === 0 || !this.image) return;
-        this._prepareImage(this.map.painter.gl, this.image);
+        this._prepareImage(this.map.painter.context.gl, this.image);
     }
 
     _prepareImage(gl: WebGLRenderingContext, image: ImageTextureSource, resize?: boolean) {

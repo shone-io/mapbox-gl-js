@@ -21,7 +21,7 @@ exports.isPatternMissing = function(image: ?CrossFaded<string>, painter: Painter
 };
 
 exports.prepare = function (image: CrossFaded<string>, painter: Painter, program: Program) {
-    const gl = painter.gl;
+    const gl = painter.context.gl;
 
     const imagePosA = painter.imageManager.getPattern(image.from);
     const imagePosB = painter.imageManager.getPattern(image.to);
@@ -45,7 +45,7 @@ exports.prepare = function (image: CrossFaded<string>, painter: Painter, program
 };
 
 exports.setTile = function (tile: {coord: TileCoord, tileSize: number}, painter: Painter, program: Program) {
-    const gl = painter.gl;
+    const gl = painter.context.gl;
 
     gl.uniform1f(program.uniforms.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
 

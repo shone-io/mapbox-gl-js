@@ -18,7 +18,7 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
-    const gl = painter.gl;
+    const gl = painter.context.gl;
     gl.enable(gl.STENCIL_TEST);
 
     const programId =
@@ -40,7 +40,7 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
         const tileRatioChanged = prevTileZoom !== tile.coord.z;
 
         if (programChanged) {
-            programConfiguration.setUniforms(painter.gl, program, layer.paint, {zoom: painter.transform.zoom});
+            programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom: painter.transform.zoom});
         }
         drawLineTile(program, painter, tile, bucket, layer, coord, programConfiguration, programChanged, tileRatioChanged);
         prevTileZoom = tile.coord.z;
@@ -49,7 +49,8 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
 };
 
 function drawLineTile(program, painter, tile, bucket, layer, coord, programConfiguration, programChanged, tileRatioChanged) {
-    const gl = painter.gl;
+    const context = painter.context;
+    const gl = context.gl;
     const dasharray = layer.paint.get('line-dasharray');
     const image = layer.paint.get('line-pattern');
 
@@ -89,7 +90,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
         if (dasharray) {
             gl.uniform1i(program.uniforms.u_image, 0);
             gl.activeTexture(gl.TEXTURE0);
-            painter.lineAtlas.bind(gl);
+            painter.lineAtlas.bind(context);
 
             gl.uniform1f(program.uniforms.u_tex_y_a, (posA: any).y);
             gl.uniform1f(program.uniforms.u_tex_y_b, (posB: any).y);
@@ -98,7 +99,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
         } else if (image) {
             gl.uniform1i(program.uniforms.u_image, 0);
             gl.activeTexture(gl.TEXTURE0);
-            painter.imageManager.bind(gl);
+            painter.imageManager.bind(context);
 
             gl.uniform2fv(program.uniforms.u_pattern_tl_a, (imagePosA: any).tl);
             gl.uniform2fv(program.uniforms.u_pattern_br_a, (imagePosA: any).br);
@@ -116,7 +117,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
     gl.uniform1f(program.uniforms.u_ratio, 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom));
 
     program.draw(
-        gl,
+        context,
         gl.TRIANGLES,
         layer.id,
         bucket.layoutVertexBuffer,

@@ -14,7 +14,7 @@ class RenderTexture {
     attachedRbo: ?WebGLRenderbuffer;
 
     constructor(painter: Painter) {
-        const gl = this.gl = painter.gl;
+        const gl = this.gl = painter.context.gl;
 
         const texture = this.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);

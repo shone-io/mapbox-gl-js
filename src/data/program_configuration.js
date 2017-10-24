@@ -6,6 +6,7 @@ const createVertexArrayType = require('./vertex_array_type');
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
 const VertexBuffer = require('../gl/vertex_buffer');
 const Color = require('../style-spec/util/color');
+const Context = require('../gl/context');
 
 import type StyleLayer from '../style/style_layer';
 import type {ViewType, StructArray, SerializedStructArray, StructArrayTypeParameters} from '../util/struct_array';
@@ -81,7 +82,7 @@ interface Binder<T> {
 
     defines(): Array<string>;
 
-    setUniforms(gl: WebGLRenderingContext,
+    setUniforms(context: Context,
                 program: Program,
                 globals: GlobalProperties,
                 currentValue: PossiblyEvaluatedPropertyValue<T>): void;
@@ -108,11 +109,12 @@ class ConstantBinder<T> implements Binder<T> {
 
     populatePaintArray() {}
 
-    setUniforms(gl: WebGLRenderingContext,
+    setUniforms(context: Context,
                 program: Program,
                 globals: GlobalProperties,
                 currentValue: PossiblyEvaluatedPropertyValue<T>) {
         const value: any = currentValue.constantOr(this.value);
+        const gl = context.gl; // TODO
         if (this.type === 'color') {
             gl.uniform4f(program.uniforms[`u_${this.name}`], value.r, value.g, value.b, value.a);
         } else {
@@ -163,8 +165,8 @@ class SourceExpressionBinder<T> implements Binder<T> {
         }
     }
 
-    setUniforms(gl: WebGLRenderingContext, program: Program) {
-        gl.uniform1f(program.uniforms[`a_${this.name}_t`], 0);
+    setUniforms(context: Context, program: Program) {
+        context.gl.uniform1f(program.uniforms[`a_${this.name}_t`], 0);
     }
 }
 
@@ -227,8 +229,8 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         }
     }
 
-    setUniforms(gl: WebGLRenderingContext, program: Program, globals: GlobalProperties) {
-        gl.uniform1f(program.uniforms[`a_${this.name}_t`], this.interpolationFactor(globals.zoom));
+    setUniforms(context: Context, program: Program, globals: GlobalProperties) {
+        context.gl.uniform1f(program.uniforms[`a_${this.name}_t`], this.interpolationFactor(globals.zoom));
     }
 }
 
@@ -363,10 +365,10 @@ class ProgramConfiguration {
         return result;
     }
 
-    setUniforms<Properties: Object>(gl: WebGLRenderingContext, program: Program, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
+    setUniforms<Properties: Object>(context: Context, program: Program, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
         for (const name in this.binders) {
             const binder = this.binders[name];
-            binder.setUniforms(gl, program, globals, properties.get(binder.property));
+            binder.setUniforms(context, program, globals, properties.get(binder.property));
         }
     }
 
@@ -397,9 +399,9 @@ class ProgramConfiguration {
         return self;
     }
 
-    upload(gl: WebGLRenderingContext) {
+    upload(context: Context) {
         if (this.paintVertexArray) {
-            this.paintVertexBuffer = new VertexBuffer(gl, this.paintVertexArray);
+            this.paintVertexBuffer = new VertexBuffer(context, this.paintVertexArray);
         }
     }
 
@@ -448,9 +450,9 @@ class ProgramConfigurationSet {
         return this.programConfigurations[layerId];
     }
 
-    upload(gl: WebGLRenderingContext) {
+    upload(context: Context) {
         for (const layerId in this.programConfigurations) {
-            this.programConfigurations[layerId].upload(gl);
+            this.programConfigurations[layerId].upload(context);
         }
     }
 

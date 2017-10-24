@@ -16,6 +16,7 @@ const EXTENT = require('../data/extent');
 const Point = require('@mapbox/point-geometry');
 const VertexBuffer = require('../gl/vertex_buffer');
 const IndexBuffer = require('../gl/index_buffer');
+const Context = require('../gl/context');
 const Texture = require('../render/texture');
 const {SegmentVector} = require('../data/segment');
 const {TriangleIndexArray} = require('../data/index_array_type');
@@ -241,14 +242,16 @@ class Tile {
         return this.buckets[layer.id];
     }
 
-    upload(gl: WebGLRenderingContext) {
+    upload(context: Context) {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (!bucket.uploaded) {
-                bucket.upload(gl);
+                bucket.upload(context);
                 bucket.uploaded = true;
             }
         }
+
+        const gl = context.gl;  // TODO this is temporary, obviously; we will wrap texture into context better
 
         if (this.iconAtlasImage) {
             this.iconAtlasTexture = new Texture(gl, this.iconAtlasImage, gl.RGBA);

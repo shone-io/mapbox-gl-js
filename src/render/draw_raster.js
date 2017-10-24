@@ -14,7 +14,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
 
-    const gl = painter.gl;
+    const context = painter.context;
+    const gl = context.gl;
     const source = sourceCache.getSource();
     const program = painter.useProgram('raster');
 
@@ -77,11 +78,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         if (source instanceof ImageSource) {
             const buffer = source.boundsBuffer;
             const vao = source.boundsVAO;
-            vao.bind(gl, program, buffer);
+            vao.bind(context, program, buffer);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         } else if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
             program.draw(
-                gl,
+                context,
                 gl.TRIANGLES,
                 layer.id,
                 tile.maskedBoundsBuffer,
@@ -91,7 +92,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         } else {
             const buffer = painter.rasterBoundsBuffer;
             const vao = painter.rasterBoundsVAO;
-            vao.bind(gl, program, buffer);
+            vao.bind(context, program, buffer);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         }
     }

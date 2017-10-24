@@ -18,7 +18,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         return;
     }
 
-    const gl = painter.gl;
+    const gl = painter.context.gl;
 
     painter.setDepthSublayer(0);
     painter.depthMask(false);
@@ -50,7 +50,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram('heatmap', programConfiguration);
         const {zoom} = painter.transform;
-        programConfiguration.setUniforms(gl, program, layer.paint, {zoom});
+        programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom});
         gl.uniform1f(program.uniforms.u_radius, layer.paint.get('heatmap-radius'));
 
         gl.uniform1f(program.uniforms.u_extrude_scale, pixelsToTileUnits(tile, 1, zoom));
@@ -59,7 +59,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
         program.draw(
-            gl,
+            painter.context,    // TODO make consistent between draw calls (accessing painter.context or keeping temp const ref to context)
             gl.TRIANGLES,
             layer.id,
             bucket.layoutVertexBuffer,
@@ -145,7 +145,7 @@ function renderTextureToMap(gl, painter, layer) {
 
     gl.uniform2f(program.uniforms.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-    painter.viewportVAO.bind(gl, program, painter.viewportBuffer);
+    painter.viewportVAO.bind(painter.context, program, painter.viewportBuffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     gl.enable(gl.DEPTH_TEST);
