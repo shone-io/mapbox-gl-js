@@ -16,6 +16,10 @@ const {
     DepthRange,
     DepthTest,
     DepthFunc,
+    Blend,
+    BlendEquation,
+    BlendFunc,
+    BlendColor,
 } = require('./value');
 
 
@@ -43,6 +47,10 @@ class Context {
     depthRange: State<Array<number>>;
     depthTest: State<boolean>;
     depthFunc: State<number>;
+    blend: State<boolean>;
+    blendEquation: State<number>;
+    blendFunc: State<Array<number>>;
+    blendColor: State<Array<number>>;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
@@ -58,6 +66,10 @@ class Context {
         this.depthRange = new State(new DepthRange(this));
         this.depthTest = new State(new DepthTest(this));
         this.depthFunc = new State(new DepthFunc(this));
+        this.blend = new State(new Blend(this));
+        this.blendEquation = new State(new BlendEquation(this));
+        this.blendFunc = new State(new BlendFunc(this));
+        this.blendColor = new State(new BlendColor(this));
     }
 
     createIndexBuffer(array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {

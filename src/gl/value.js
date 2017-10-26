@@ -219,6 +219,75 @@ class DepthFunc extends ContextValue implements Value<number> {
     }
 }
 
+class Blend extends ContextValue implements Value<boolean> {
+    static default() { return true; }
+
+    set(v: boolean): void {
+        const gl = this.context.gl;
+        if (v) {
+            gl.enable(gl.BLEND);
+        } else {
+            gl.disable(gl.BLEND);
+        }
+    }
+
+    get(): any {    // should be boolean; depends on https://github.com/facebook/flow/pull/5196
+        const gl = this.context.gl;
+        return gl.isEnabled(gl.BLEND);
+    }
+}
+
+class BlendEquation extends ContextValue implements Value<number> { // TODO see below note about GLenums
+    static default(context: Context) {
+        return context.gl.FUNC_ADD;
+    }
+
+    set(v: number): void {
+        this.context.gl.blendEquation(v);
+    }
+
+    get(): number {
+        // TODO for this and others, we pick RGB or alpha -- ??
+        const gl = this.context.gl;
+        return gl.getParameter(gl.BLEND_EQUATION_RGB);
+    }
+}
+
+class BlendFunc extends ContextValue implements Value<Array<number>> {
+    // TODO still on the fence between utility classes/defns for
+    // BlendFunc, DepthFunc etc -- clean up / figure out what
+    // to do with all GLenum values
+    static default(context: Context) {
+        const gl = context.gl;
+        return [gl.ONE, gl.ZERO];
+    }
+
+    set(v: Array<number>): void {
+        this.context.gl.blendFunc(v[0], v[1]);
+    }
+
+    get(): Array<number> {
+        // note in native these are statically cast to ColorMode::BlendFactor -- for type cleanup
+        const gl = this.context.gl;
+        return [
+            gl.getParameter(gl.BLEND_SRC_ALPHA),
+            gl.getParameter(gl.BLEND_DST_ALPHA)
+        ];
+    }
+}
+
+class BlendColor extends ContextValue implements Value<Array<number>> {
+    static default() { return [0, 0, 0, 0]; }
+
+    set(v: Array<number>): void {
+        this.context.gl.blendColor(v[0], v[1], v[2], v[3]);
+    }
+
+    get(): Array<number> {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.BLEND_COLOR);
+    }
+}
 module.exports = {
     ClearColor,
     ClearDepth,
@@ -233,4 +302,8 @@ module.exports = {
     DepthRange,
     DepthTest,
     DepthFunc,
+    Blend,
+    BlendEquation,
+    BlendFunc,
+    BlendColor,
 };

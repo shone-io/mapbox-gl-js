@@ -33,7 +33,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     context.clear({ color: [0, 0, 0, 0] });
 
     // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
-    gl.blendFunc(gl.ONE, gl.ONE);
+    context.blendFunc.set([gl.ONE, gl.ONE]);
 
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
@@ -124,7 +124,7 @@ function renderTextureToMap(context, painter, layer) {
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    context.blendFunc.set([gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
 
     const program = painter.useProgram('heatmapTexture');
 
