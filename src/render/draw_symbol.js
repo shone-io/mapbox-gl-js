@@ -23,7 +23,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     const gl = context.gl;
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
-    gl.disable(gl.STENCIL_TEST);
+    context.stencilTest.set(false);
 
     painter.setDepthSublayer(0);
     context.depthMask.set(false);
@@ -56,7 +56,8 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
     rotationAlignment, pitchAlignment, keepUpright) {
 
-    const gl = painter.context.gl;
+    const context = painter.context;
+    const gl = context.gl;
     const tr = painter.transform;
 
     const rotateWithMap = rotationAlignment === 'map';
@@ -70,9 +71,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const depthOn = pitchWithMap;
 
     if (depthOn) {
-        gl.enable(gl.DEPTH_TEST);
+        context.depthTest.set(true);
     } else {
-        gl.disable(gl.DEPTH_TEST);
+        context.depthTest.set(false);
     }
 
     let program;
@@ -132,7 +133,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
     }
 
-    if (!depthOn) gl.enable(gl.DEPTH_TEST);
+    if (!depthOn) context.depthTest.set(true);
 }
 
 function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pitchWithMap, sizeData) {

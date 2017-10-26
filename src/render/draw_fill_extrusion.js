@@ -23,8 +23,8 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         const context = painter.context;
         const gl = context.gl;
 
-        gl.disable(gl.STENCIL_TEST);
-        gl.enable(gl.DEPTH_TEST);
+        context.stencilTest.set(false);
+        context.depthTest.set(true);
 
         context.clear({ color: [0, 0, 0, 0] });
         context.depthMask.set(true);
@@ -45,8 +45,8 @@ function drawExtrusionTexture(painter, layer) {
     const gl = context.gl;
     const program = painter.useProgram('extrusionTexture');
 
-    gl.disable(gl.STENCIL_TEST);
-    gl.disable(gl.DEPTH_TEST);
+    context.stencilTest.set(false);
+    context.depthTest.set(false);
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, renderedTexture.texture);

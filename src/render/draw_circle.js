@@ -29,7 +29,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
     // Allow circles to be drawn across boundaries, so that
     // large circles are not clipped to tiles
-    gl.disable(gl.STENCIL_TEST);
+    context.stencilTest.set(false);
 
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];

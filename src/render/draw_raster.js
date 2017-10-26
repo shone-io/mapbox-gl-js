@@ -19,12 +19,12 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const source = sourceCache.getSource();
     const program = painter.useProgram('raster');
 
-    gl.enable(gl.DEPTH_TEST);
+    context.depthTest.set(true);
     context.depthMask.set(layer.paint.get('raster-opacity') === 1);
     // Change depth function to prevent double drawing in areas where tiles overlap.
     gl.depthFunc(gl.LESS);
 
-    gl.disable(gl.STENCIL_TEST);
+    context.stencilTest.set(false);
 
     // Constant parameters.
     gl.uniform1f(program.uniforms.u_brightness_low, layer.paint.get('raster-brightness-min'));
@@ -97,7 +97,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
     }
 
-    gl.depthFunc(gl.LEQUAL);
+    context.depthFunc.set(context.gl.LEQUAL);   // TODO bad
 }
 
 function spinWeights(angle) {

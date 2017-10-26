@@ -10,11 +10,18 @@ const {
     ColorMask,
     DepthMask,
     StencilMask,
+    StencilFunc,
+    StencilOp,
+    StencilTest,
+    DepthRange,
+    DepthTest,
+    DepthFunc,
 } = require('./value');
 
 
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
 import type {StructArray} from '../util/struct_array';
+import type {StencilFuncType, StencilOpType} from './value';
 
 type ClearArgs = {
     color?: Array<number>,
@@ -30,6 +37,12 @@ class Context {
     colorMask: State<Array<boolean>>;
     depthMask: State<boolean>;
     stencilMask: State<number>;
+    stencilFunc: State<StencilFuncType>;
+    stencilOp: State<StencilOpType>;
+    stencilTest: State<boolean>;
+    depthRange: State<Array<number>>;
+    depthTest: State<boolean>;
+    depthFunc: State<number>;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
@@ -39,6 +52,12 @@ class Context {
         this.colorMask = new State(new ColorMask(this));
         this.depthMask = new State(new DepthMask(this));
         this.stencilMask = new State(new StencilMask(this));
+        this.stencilFunc = new State(new StencilFunc(this));
+        this.stencilOp = new State(new StencilOp(this));
+        this.stencilTest = new State(new StencilTest(this));
+        this.depthRange = new State(new DepthRange(this));
+        this.depthTest = new State(new DepthTest(this));
+        this.depthFunc = new State(new DepthFunc(this));
     }
 
     createIndexBuffer(array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {

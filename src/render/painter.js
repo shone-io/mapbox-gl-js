@@ -16,6 +16,7 @@ const Program = require('./program');
 const Context = require('../gl/context');
 const RenderTexture = require('./render_texture');
 const updateTileMasks = require('./tile_mask');
+const {StencilOpType} = require('../gl/value');
 
 const draw = {
     symbol: require('./draw_symbol'),
@@ -86,7 +87,7 @@ class Painter {
     lineAtlas: LineAtlas;
     imageManager: ImageManager;
     glyphManager: GlyphManager;
-    depthRange: number;
+    depthRange: number;             // TODO this is different from actual gl.depthRange -- is it an abstraction we want to keep or ?
     renderPass: RenderPass;
     currentLayer: number;
     id: string;
@@ -146,10 +147,10 @@ class Painter {
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-        gl.enable(gl.STENCIL_TEST);
+        context.stencilTest.set(true);
 
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
+        context.depthTest.set(true);
+        context.depthFunc.set(context.gl.LEQUAL);   // bad
 
         context.depthMask.set(false);
 
@@ -250,12 +251,13 @@ class Painter {
         const gl = context.gl;
         context.colorMask.set([false, false, false, false]);
         context.depthMask.set(false);
-        gl.disable(gl.DEPTH_TEST);
-        gl.enable(gl.STENCIL_TEST);
+        context.depthTest.set(false);
+        context.stencilTest.set(true);
 
         context.stencilMask.set(0xFF);
         // Tests will always pass, and ref value will be written to stencil buffer.
-        gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+        // TODO eventually we'll probably have to map these to safer enums:
+        context.stencilOp.set(new StencilOpType(gl.KEEP, gl.KEEP, gl.REPLACE)); // TODO this is clunky -- maybe use array, or a class w constructor
 
         let idNext = 1;
         this._tileClippingMaskIDs = {};
@@ -277,7 +279,7 @@ class Painter {
         context.stencilMask.set(0x00);
         context.colorMask.set([true, true, true, true]);
         context.depthMask.set(true);
-        gl.enable(gl.DEPTH_TEST);
+        context.depthTest.set(true);
     }
 
     enableTileClippingMask(coord: TileCoord) {
@@ -476,7 +478,7 @@ class Painter {
     setDepthSublayer(n: number) {
         const farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
         const nearDepth = farDepth - 1 + this.depthRange;
-        this.context.gl.depthRange(nearDepth, farDepth);
+        this.context.depthRange.set([nearDepth, farDepth]);
     }
 
     /**

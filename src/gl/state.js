@@ -10,7 +10,7 @@ class State<T> {
 
     constructor(v: Value<T>) {
         this.value = v;
-        this.current = v.constructor.default();
+        this.current = v.constructor.default(v.context);
     }
 
     get(): T {
@@ -31,6 +31,6 @@ class State<T> {
     isDirty(): boolean {
         return this.dirty;
     }
-};
+}
 
 module.exports = State;
