@@ -20,12 +20,13 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 
     if (painter.renderPass === '3d') {
-        const gl = painter.context.gl;
+        const context = painter.context;
+        const gl = context.gl;
 
         gl.disable(gl.STENCIL_TEST);
         gl.enable(gl.DEPTH_TEST);
 
-        painter.clearColor();
+        context.clear({ color: [0, 0, 0, 0] });
         painter.depthMask(true);
 
         for (let i = 0; i < coords.length; i++) {

@@ -18,7 +18,8 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         return;
     }
 
-    const gl = painter.context.gl;
+    const context = painter.context;
+    const gl = context.gl;
 
     painter.setDepthSublayer(0);
     painter.depthMask(false);
@@ -29,8 +30,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
     renderToTexture(gl, painter, layer);
 
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    context.clear({ color: [0, 0, 0, 0] });
 
     // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
     gl.blendFunc(gl.ONE, gl.ONE);
