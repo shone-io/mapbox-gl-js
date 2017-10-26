@@ -3,7 +3,14 @@ const assert = require('assert');
 const IndexBuffer = require('./index_buffer');
 const VertexBuffer = require('./vertex_buffer');
 const State = require('./state');
-const Values = require('./value');
+const {
+    ClearColor,
+    ClearDepth,
+    ClearStencil,
+    ColorMask,
+    DepthMask,
+    StencilMask,
+} = require('./value');
 
 
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
@@ -17,11 +24,21 @@ type ClearArgs = {
 
 class Context {
     gl: WebGLRenderingContext;
-    clearDepth: State<Values.ClearDepth, number>;
+    clearColor: State<Array<number>>;
+    clearDepth: State<number>;
+    clearStencil: State<number>;
+    colorMask: State<Array<boolean>>;
+    depthMask: State<boolean>;
+    stencilMask: State<number>;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
-        this.clearDepth = new State(new Values.ClearDepth(this));
+        this.clearColor = new State(new ClearColor(this));
+        this.clearDepth = new State(new ClearDepth(this));
+        this.clearStencil = new State(new ClearStencil(this));
+        this.colorMask = new State(new ColorMask(this));
+        this.depthMask = new State(new DepthMask(this));
+        this.stencilMask = new State(new StencilMask(this));
     }
 
     createIndexBuffer(array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
@@ -49,23 +66,23 @@ class Context {
 
         if (color) {
             mask |= gl.COLOR_BUFFER_BIT;
-            gl.clearColor(color[0], color[1], color[2], color[3]);
-            gl.colorMask(true, true, true, true);
+            this.clearColor.set(color);
+            this.colorMask.set([true, true, true, true]);
         }
 
         if (typeof depth !== 'undefined') {
             mask |= gl.DEPTH_BUFFER_BIT;
             this.clearDepth.set(depth);
-            // gl.clearDepth(depth);
-            gl.depthMask(true);
+            this.depthMask.set(true);
         }
 
         if (typeof stencil !== 'undefined') {
             mask |= gl.STENCIL_BUFFER_BIT;
-            gl.clearStencil(stencil);
-            gl.stencilMask(0xFF);
+            this.clearStencil.set(stencil);
+            this.stencilMask.set(0xFF);
         }
 
+        // TODO
         gl.clear(mask);
     }
 

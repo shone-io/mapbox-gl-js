@@ -2,39 +2,106 @@
 
 import type Context from './context';
 
-interface ValueInterface<T> {
-    current: T,
-    +default: T,
-    set(value: T): void,
-    get(): T
-}
-
-// Abstract class for the sake of interface member access:
-class Value<T> implements ValueInterface<T> {
-    current: T;
-    default: T;
+export interface Value<T> {
     context: Context;
-    constructor(context: Context) { this.context = context; }
-    set(value: T) {}
-    get(): T { return this.default; }
+    static default(): T;
+    set(value: T): void;
+    get(): T;
+};
+
+class ContextValue {
+    context: Context;
+
+    constructor(context: Context) {
+        this.context = context;
+    }
 }
 
-class ClearDepth extends Value<number> {
-    constructor(context: Context) {
-        super(context);
-        this.current = 1;
-        this.default = 1;
+class ClearColor extends ContextValue implements Value<Array<number>> {
+    static default() { return [0, 0, 0, 0] };
+
+    set(v: Array<number>): void {
+        this.context.gl.clearColor(v[0], v[1], v[2], v[3]);
     }
-    set(value: number) {
-        this.context.gl.clearDepth(value);
+
+    get(): Array<number> {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.COLOR_CLEAR_VALUE);
     }
+}
+
+class ClearDepth extends ContextValue implements Value<number> {
+    static default() { return 1 };
+
+    set(v: number): void {
+        this.context.gl.clearDepth(v);
+    }
+
     get(): number {
         const gl = this.context.gl;
         return gl.getParameter(gl.DEPTH_CLEAR_VALUE);
     }
 }
 
+class ClearStencil extends ContextValue implements Value<number> {
+    static default() { return 0 };
+
+    set(v: number): void {
+        this.context.gl.clearStencil(v);
+    }
+
+    get(): number {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.STENCIL_CLEAR_VALUE);
+    }
+}
+
+class ColorMask extends ContextValue implements Value<Array<boolean>> {
+    static default() { return [true, true, true, true] };
+
+    set(v: Array<boolean>): void {
+        this.context.gl.colorMask(v[0], v[1], v[2], v[3]);
+    }
+
+    get(): Array<boolean> {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.COLOR_WRITEMASK);
+    }
+}
+
+class DepthMask extends ContextValue implements Value<boolean> {
+    static default() { return true };
+
+    set(v: boolean): void {
+        this.context.gl.depthMask(v);
+    }
+
+    get(): boolean {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.DEPTH_WRITEMASK);
+    }
+}
+
+class StencilMask extends ContextValue implements Value<number> {
+    static default() { return 0xFF };   // TODO in native this is ~0u
+
+    set(v: number): void {
+        this.context.gl.stencilMask(v);
+    }
+
+    get(): number {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.STENCIL_WRITEMASK);
+    }
+}
+
+
+
 module.exports = {
-    Value,
-    ClearDepth
+    ClearColor,
+    ClearDepth,
+    ClearStencil,
+    ColorMask,
+    DepthMask,
+    StencilMask,
 };

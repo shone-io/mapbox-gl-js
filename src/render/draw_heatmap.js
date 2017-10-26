@@ -22,7 +22,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     const gl = context.gl;
 
     painter.setDepthSublayer(0);
-    painter.depthMask(false);
+    context.depthMask.set(false);
 
     // Allow kernels to be drawn across boundaries, so that
     // large kernels are not clipped to tiles

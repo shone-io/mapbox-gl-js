@@ -68,7 +68,6 @@ class Painter {
     height: number;
     depthRbo: WebGLRenderbuffer;
     depthRboAttached: boolean;
-    _depthMask: boolean;
     tileExtentBuffer: VertexBuffer;
     tileExtentVAO: VertexArrayObject;
     tileExtentPatternVAO: VertexArrayObject;
@@ -152,8 +151,7 @@ class Painter {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
 
-        this._depthMask = false;
-        gl.depthMask(false);
+        context.depthMask.set(false);
 
         const tileExtentArray = new PosArray();
         tileExtentArray.emplaceBack(0, 0);
@@ -248,13 +246,14 @@ class Painter {
     }
 
     _renderTileClippingMasks(coords: Array<TileCoord>) {
-        const gl = this.context.gl;
-        gl.colorMask(false, false, false, false);
-        this.depthMask(false);
+        const context = this.context;
+        const gl = context.gl;
+        context.colorMask.set([false, false, false, false]);
+        context.depthMask.set(false);
         gl.disable(gl.DEPTH_TEST);
         gl.enable(gl.STENCIL_TEST);
 
-        gl.stencilMask(0xFF);
+        context.stencilMask.set(0xFF);
         // Tests will always pass, and ref value will be written to stencil buffer.
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
@@ -275,9 +274,9 @@ class Painter {
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.length);
         }
 
-        gl.stencilMask(0x00);
-        gl.colorMask(true, true, true, true);
-        this.depthMask(true);
+        context.stencilMask.set(0x00);
+        context.colorMask.set([true, true, true, true]);
+        context.depthMask.set(true);
         gl.enable(gl.DEPTH_TEST);
     }
 
@@ -464,13 +463,6 @@ class Painter {
         }
 
         this.depthRboAttached = true;
-    }
-
-    depthMask(mask: boolean) {
-        if (mask !== this._depthMask) {
-            this._depthMask = mask;
-            this.context.gl.depthMask(mask);
-        }
     }
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {

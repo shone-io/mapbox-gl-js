@@ -20,7 +20,8 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         return;
     }
 
-    const gl = painter.context.gl;
+    const context = painter.context;
+    const gl = context.gl;
     gl.enable(gl.STENCIL_TEST);
 
     const pass = (!layer.paint.get('fill-pattern') &&
@@ -32,14 +33,14 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
         painter.setDepthSublayer(1);
-        painter.depthMask(painter.renderPass === 'opaque');
+        context.depthMask.set(painter.renderPass === 'opaque');
         drawFillTiles(painter, sourceCache, layer, coords, drawFillTile);
     }
 
     // Draw stroke
     if (painter.renderPass === 'translucent' && layer.paint.get('fill-antialias')) {
         painter.lineWidth(2);
-        painter.depthMask(false);
+        context.depthMask.set(false);
 
         // If we defined a different color for the fill outline, we are
         // going to ignore the bits in 0x07 and just care about the global

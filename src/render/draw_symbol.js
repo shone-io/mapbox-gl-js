@@ -19,13 +19,14 @@ module.exports = drawSymbols;
 function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
 
-    const gl = painter.context.gl;
+    const context = painter.context;
+    const gl = context.gl;
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
     gl.disable(gl.STENCIL_TEST);
 
     painter.setDepthSublayer(0);
-    painter.depthMask(false);
+    context.depthMask.set(false);
 
     if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
         drawLayerSymbols(painter, sourceCache, layer, coords, false,

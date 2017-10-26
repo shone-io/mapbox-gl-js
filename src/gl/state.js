@@ -1,31 +1,36 @@
 // @flow
 
-const {Value} = require('./value');
+import type Context from './context';
+import type {Value} from './value';
 
-
-class State<V, U> {
-    currentValue: V;
+class State<T> {
+    value: Value<T>;
+    current: T;
     dirty: boolean;
 
-    constructor(value: V) {
-        this.currentValue = value;
+    constructor(v: Value<T>) {
+        this.value = v;
+        this.current = v.constructor.default();
     }
 
-    set(rawValue: U) {
-        if (this.currentValue instanceof Value) {
-          if (rawValue != this.currentValue.Current) {
-              this.currentValue.set(rawValue);
-          }
+    get(): T {
+        return this.current;
+    }
+
+    set(t: T) {
+        if (this.current !== t) {
+            this.current = t;
+            this.value.set(t);
         }
     }
 
-    setDirty() {
+    setDirty(): void {
         this.dirty = true;
     }
 
     isDirty(): boolean {
         return this.dirty;
     }
-}
+};
 
 module.exports = State;

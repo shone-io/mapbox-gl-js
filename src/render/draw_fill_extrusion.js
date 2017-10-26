@@ -27,7 +27,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         gl.enable(gl.DEPTH_TEST);
 
         context.clear({ color: [0, 0, 0, 0] });
-        painter.depthMask(true);
+        context.depthMask.set(true);
 
         for (let i = 0; i < coords.length; i++) {
             drawExtrusion(painter, source, layer, coords[i]);

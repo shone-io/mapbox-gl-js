@@ -15,10 +15,12 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
     const opacity = layer.paint.get('line-opacity');
     if (opacity.constantOr(1) === 0) return;
 
-    painter.setDepthSublayer(0);
-    painter.depthMask(false);
+    const context = painter.context;
+    const gl = context.gl;
 
-    const gl = painter.context.gl;
+    painter.setDepthSublayer(0);
+    context.depthMask.set(false);
+
     gl.enable(gl.STENCIL_TEST);
 
     const programId =
