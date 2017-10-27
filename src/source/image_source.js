@@ -203,7 +203,7 @@ class ImageSource extends Evented implements Source {
 
         if (!this.textureLoaded) {
             this.textureLoaded = true;
-            this.texture = new Texture(gl, image, gl.RGBA);
+            this.texture = new Texture(context, image, gl.RGBA);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         } else if (resize) {
             this.texture.update(image);

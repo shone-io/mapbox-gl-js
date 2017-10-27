@@ -454,13 +454,15 @@ class Painter {
     }
 
     _setup3DRenderbuffer() {
+        const context = this.context;
         // All of the 3D textures will use the same depth renderbuffer.
         if (!this.depthRbo) {
             const gl = this.context.gl;
             this.depthRbo = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, this.depthRbo);
+
+            context.bindRenderbuffer.set(this.depthRbo);
             gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
-            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            context.bindRenderbuffer.set(null);
         }
 
         this.depthRboAttached = true;
@@ -527,7 +529,7 @@ class Painter {
     }
 
     lineWidth(width: number) {
-        this.context.gl.lineWidth(util.clamp(width, this.lineWidthRange[0], this.lineWidthRange[1]));
+        this.context.lineWidth.set(util.clamp(width, this.lineWidthRange[0], this.lineWidthRange[1]));
     }
 
     showOverdrawInspector(enabled: boolean) {

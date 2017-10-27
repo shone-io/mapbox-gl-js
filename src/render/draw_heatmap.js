@@ -28,7 +28,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     // large kernels are not clipped to tiles
     context.stencilTest.set(false);
 
-    renderToTexture(gl, painter, layer);
+    renderToTexture(context, painter, layer);
 
     context.clear({ color: [0, 0, 0, 0] });
 
@@ -71,8 +71,9 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     renderTextureToMap(context, painter, layer);
 }
 
-function renderToTexture(gl, painter, layer) {
-    gl.activeTexture(gl.TEXTURE1);
+function renderToTexture(context, painter, layer) {
+    const gl = context.gl;
+    context.activeTexture.set(gl.TEXTURE1);
 
     // Use a 4x downscaled screen texture for better performance
     gl.viewport(0, 0, painter.width / 4, painter.height / 4);
@@ -82,7 +83,7 @@ function renderToTexture(gl, painter, layer) {
 
     if (!texture) {
         texture = layer.heatmapTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        context.bindTexture.set(texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -90,37 +91,38 @@ function renderToTexture(gl, painter, layer) {
 
         fbo = layer.heatmapFbo = gl.createFramebuffer();
 
-        bindTextureFramebuffer(gl, painter, texture, fbo);
+        bindTextureFramebuffer(context, painter, texture, fbo);
 
     } else {
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        context.bindTexture.set(texture);
+        context.bindFramebuffer.set(fbo);
     }
 }
 
-function bindTextureFramebuffer(gl, painter, texture, fbo) {
+function bindTextureFramebuffer(context, painter, texture, fbo) {
+    const gl = context.gl;
     // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA,
         painter.extTextureHalfFloat ? painter.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE, null);
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    context.bindFramebuffer.set(fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
     // If using half-float texture as a render target is not supported, fall back to a low precision texture
     if (painter.extTextureHalfFloat && gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
         painter.extTextureHalfFloat = null;
-        bindTextureFramebuffer(gl, painter, texture, fbo);
+        bindTextureFramebuffer(context, painter, texture, fbo);
     }
 }
 
 function renderTextureToMap(context, painter, layer) {
     const gl = context.gl;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    context.bindFramebuffer.set(null);
 
-    gl.activeTexture(gl.TEXTURE2);
+    context.activeTexture.set(gl.TEXTURE2);
     let colorRampTexture = layer.colorRampTexture;
     if (!colorRampTexture) {
-        colorRampTexture = layer.colorRampTexture = new Texture(gl, layer.colorRamp, gl.RGBA);
+        colorRampTexture = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
@@ -130,8 +132,8 @@ function renderTextureToMap(context, painter, layer) {
 
     gl.viewport(0, 0, painter.width, painter.height);
 
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, layer.heatmapTexture);
+    context.activeTexture.set(gl.TEXTURE0);
+    context.bindTexture.set(layer.heatmapTexture);
 
     const opacity = layer.paint.get('heatmap-opacity');
     gl.uniform1f(program.uniforms.u_opacity, opacity);

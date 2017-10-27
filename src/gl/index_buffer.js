@@ -7,18 +7,19 @@ import type Context from '../gl/context';
 
 
 class IndexBuffer {
-    gl: WebGLRenderingContext;
+    context: Context;
     buffer: WebGLBuffer;
     dynamicDraw: boolean;
 
     constructor(context: Context, array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
-        const gl = this.gl = context.gl;
+        this.context = context;
+        const gl = context.gl;
         this.buffer = gl.createBuffer();
         this.dynamicDraw = Boolean(dynamicDraw);
 
         this.unbindVAO();
 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer);
+        context.bindElementBuffer.set(this.buffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
         if (!this.dynamicDraw) {
@@ -39,21 +40,23 @@ class IndexBuffer {
     }
 
     bind() {
-        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffer);
+        this.context.bindElementBuffer.set(this.buffer);
     }
 
     updateData(array: SerializedStructArray) {
+        const gl = this.context.gl;
         assert(this.dynamicDraw);
         // The right VAO will get this buffer re-bound later in VertexArrayObject#bind
         // See https://github.com/mapbox/mapbox-gl-js/issues/5620
         this.unbindVAO();
         this.bind();
-        this.gl.bufferSubData(this.gl.ELEMENT_ARRAY_BUFFER, 0, array.arrayBuffer);
+        gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, array.arrayBuffer);
     }
 
     destroy() {
+        const gl = this.context.gl;
         if (this.buffer) {
-            this.gl.deleteBuffer(this.buffer);
+            gl.deleteBuffer(this.buffer);
             delete this.buffer;
         }
     }

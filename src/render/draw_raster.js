@@ -54,10 +54,10 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         let parentScaleBy, parentTL;
 
-        gl.activeTexture(gl.TEXTURE0);
+        context.activeTexture.set(gl.TEXTURE0);
         tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
 
-        gl.activeTexture(gl.TEXTURE1);
+        context.activeTexture.set(gl.TEXTURE1);
 
         if (parentTile) {
             parentTile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);

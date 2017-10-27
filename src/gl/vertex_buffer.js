@@ -34,7 +34,7 @@ class VertexBuffer {
     attributes: Array<StructArrayMember>;
     itemSize: number;
     dynamicDraw: ?boolean;
-    gl: WebGLRenderingContext;  // TODO move out
+    context: Context;
     buffer: WebGLBuffer;
 
     /**
@@ -46,10 +46,11 @@ class VertexBuffer {
         this.itemSize = array.bytesPerElement;
         this.dynamicDraw = dynamicDraw;
 
-        const gl = this.gl = context.gl;
+        this.context = context;
+        const gl = context.gl;
         this.buffer = gl.createBuffer();
-        this.gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-        this.gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+        context.bindVertexBuffer.set(this.buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
         if (!this.dynamicDraw) {
             delete array.arrayBuffer;
@@ -57,12 +58,13 @@ class VertexBuffer {
     }
 
     bind() {
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+        this.context.bindVertexBuffer.set(this.buffer);
     }
 
     updateData(array: SerializedStructArray) {
+        const gl = this.context.gl;
         this.bind();
-        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, array.arrayBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.arrayBuffer);
     }
 
     enableAttributes(gl: WebGLRenderingContext, program: Program) {
@@ -75,6 +77,7 @@ class VertexBuffer {
         }
     }
 
+    // TODO !!! move this whole class into context
     /**
      * Set the attribute pointers in a WebGL context
      * @param gl The WebGL context
@@ -103,8 +106,9 @@ class VertexBuffer {
      * Destroy the GL buffer bound to the given WebGL context
      */
     destroy() {
+        const gl = this.context.gl;
         if (this.buffer) {
-            this.gl.deleteBuffer(this.buffer);
+            gl.deleteBuffer(this.buffer);
             delete this.buffer;
         }
     }

@@ -91,7 +91,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
 
         if (dasharray) {
             gl.uniform1i(program.uniforms.u_image, 0);
-            gl.activeTexture(gl.TEXTURE0);
+            context.activeTexture.set(gl.TEXTURE0);
             painter.lineAtlas.bind(context);
 
             gl.uniform1f(program.uniforms.u_tex_y_a, (posA: any).y);
@@ -100,7 +100,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
 
         } else if (image) {
             gl.uniform1i(program.uniforms.u_image, 0);
-            gl.activeTexture(gl.TEXTURE0);
+            context.activeTexture.set(gl.TEXTURE0);
             painter.imageManager.bind(context);
 
             gl.uniform2fv(program.uniforms.u_pattern_tl_a, (imagePosA: any).tl);

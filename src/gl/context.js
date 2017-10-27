@@ -20,6 +20,15 @@ const {
     BlendEquation,
     BlendFunc,
     BlendColor,
+    ActiveTextureUnit,
+    LineWidth,
+    BindFramebuffer,
+    BindRenderbuffer,
+    BindTexture,
+    BindVertexBuffer,
+    BindElementBuffer,
+    PixelStoreUnpack,
+    PixelStoreUnpackPremultiplyAlpha,
 } = require('./value');
 
 
@@ -33,7 +42,8 @@ import type {
     StencilFuncType,
     DepthFuncType,
     StencilOpType,
-    BlendEquationType
+    BlendEquationType,
+    TextureUnitType,
 } from './types';
 
 type ClearArgs = {
@@ -60,6 +70,15 @@ class Context {
     blendEquation: State<BlendEquationType>;
     blendFunc: State<BlendFuncType>;
     blendColor: State<ColorType>;
+    lineWidth: State<number>
+    activeTexture: State<TextureUnitType>;
+    bindFramebuffer: State<?WebGLFramebuffer>;
+    bindRenderbuffer: State<?WebGLRenderbuffer>
+    bindTexture: State<?WebGLTexture>;
+    bindVertexBuffer: State<?WebGLBuffer>;
+    bindElementBuffer: State<?WebGLBuffer>;
+    pixelStoreUnpack: State<number>;
+    pixelStoreUnpackPremultiplyAlpha: State<boolean>;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
@@ -79,6 +98,18 @@ class Context {
         this.blendEquation = new State(new BlendEquation(this));
         this.blendFunc = new State(new BlendFunc(this));
         this.blendColor = new State(new BlendColor(this));
+        this.lineWidth = new State(new LineWidth(this));
+        this.activeTexture = new State(new ActiveTextureUnit(this));
+        this.bindFramebuffer = new State(new BindFramebuffer(this));
+        this.bindRenderbuffer = new State(new BindRenderbuffer(this));
+        this.bindTexture = new State(new BindTexture(this));
+        this.bindVertexBuffer = new State(new BindVertexBuffer(this));
+        this.bindElementBuffer = new State(new BindElementBuffer(this));
+        // TODO extensions -- OES_vertex_array_object, etc
+        this.pixelStoreUnpack = new State(new PixelStoreUnpack(this));
+        this.pixelStoreUnpackPremultiplyAlpha = new State(new PixelStoreUnpackPremultiplyAlpha(this));
+
+
     }
 
     createIndexBuffer(array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
@@ -99,6 +130,10 @@ class Context {
     updateTexture(/* TODO */) {}
 
     bindTexture(/* TODO */) {}
+
+    deleteTexture(/* TODO */) {}
+    // TODO in native, all deleting is done in Context::performCleanup
+    // (are not separate methods) -- ??
 
     clear({color, depth, stencil}: ClearArgs) {
         const gl = this.gl;

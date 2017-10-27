@@ -12,6 +12,7 @@ import type {
     StencilOpType,
     DepthFuncType,
     BlendEquationType,
+    TextureUnitType,
 } from './types';
 
 export interface Value<T> {
@@ -231,7 +232,7 @@ class Blend extends ContextValue implements Value<boolean> {
     }
 }
 
-class BlendEquation extends ContextValue implements Value<BlendEquationType> { // TODO see below note about GLenums
+class BlendEquation extends ContextValue implements Value<BlendEquationType> { // TODO we don't use this anywhere -- keep or no?
     static default(context: Context) {
         return context.gl.FUNC_ADD;
     }
@@ -279,6 +280,177 @@ class BlendColor extends ContextValue implements Value<ColorType> {
         return gl.getParameter(gl.BLEND_COLOR);
     }
 }
+
+// class Program extends ContextValue implements Value<WebGLProgram> {
+//     // TODO figure out program caching
+
+
+//     // static default() { return 0; }
+
+//     // set(v: WebGLProgram): void {
+//     //     this.context.gl.useProgram(v);
+//     // }
+
+//     // get(): WebGLProgram {
+//     //     const gl = this.context.gl;
+//     //     return gl.getParameter(gl.CURRENT_PROGRAM);
+//     // }
+// }
+
+class LineWidth extends ContextValue implements Value<number> {
+    // TODO https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
+    // says
+    // gl.lineWidth() has no effect in common modern browsers.
+    // The corresponding Chromium bug and Firefox bug are closed
+    // as Won't Fix and the WebGL specification now defines that
+    // gl.lineWidth() does not change the line width anymore
+    // -- delete all references in gl-js?
+
+    static default() { return 1; }
+
+    set(v: number): void {
+        this.context.gl.lineWidth(v);
+    }
+
+    get(): number {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.LINE_WIDTH)
+    }
+}
+
+class ActiveTextureUnit extends ContextValue implements Value<TextureUnitType> {
+    static default(context: Context) {
+        return context.gl.TEXTURE0;
+    }
+
+    set(v: TextureUnitType): void {
+        this.context.gl.activeTexture(v);
+    }
+
+    get(): TextureUnitType {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.ACTIVE_TEXTURE);
+    }
+}
+
+// class Viewport extends ContextValue implements Value<any> {}
+
+// class ScissorTest extends ContextValue implements Value<any> {}
+// we don't use ScissorTest anywhere in gl-js -- safe to not implement here?
+
+class BindFramebuffer extends ContextValue implements Value<?WebGLFramebuffer> {
+    static default() { return null; }
+
+    set(v: ?WebGLFramebuffer): void {
+        const gl = this.context.gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, v);
+    }
+
+    get(): ?WebGLFramebuffer {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.FRAMEBUFFER_BINDING);
+    }
+}
+
+class BindRenderbuffer extends ContextValue implements Value<?WebGLRenderbuffer> {
+    static default() { return null; }
+
+    set(v: ?WebGLRenderbuffer): void {
+        const gl = this.context.gl;
+        gl.bindRenderbuffer(gl.RENDERBUFFER, v);
+    }
+
+    get(): ?WebGLRenderbuffer {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.RENDERBUFFER_BINDING);
+    }
+}
+
+class BindTexture extends ContextValue implements Value<?WebGLTexture> {
+    static default() { return null; }
+
+    set(v: ?WebGLTexture): void {
+        const gl = this.context.gl;
+        gl.bindTexture(gl.TEXTURE_2D, v);
+    }
+
+    get(): ?WebGLTexture {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.TEXTURE_BINDING_2D);
+    }
+}
+
+class BindVertexBuffer extends ContextValue implements Value<?WebGLBuffer> {
+    static default() { return null; }
+
+    set(v: ?WebGLBuffer): void {
+        const gl = this.context.gl;
+        gl.bindBuffer(gl.ARRAY_BUFFER, v);
+    }
+
+    get(): ?WebGLBuffer {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.ARRAY_BUFFER_BINDING);
+    }
+}
+
+class BindElementBuffer extends ContextValue implements Value<?WebGLBuffer> {
+    static default() { return null; }
+
+    set(v: ?WebGLBuffer): void {
+        const gl = this.context.gl;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, v);
+    }
+
+    get(): ?WebGLBuffer {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.ELEMENT_ARRAY_BUFFER_BINDING);
+    }
+}
+
+// class BindVertexArray extends ContextValue implements Value<any> {}
+
+// class VertexAttribute extends ContextValue implements Value<any> {}
+
+// class PixelStorePack extends ContextValue implements Value<any> {}
+// we don't set this anywhere in gl-js -- delete?
+
+class PixelStoreUnpack extends ContextValue implements Value<number> {
+    static default() { return 4; }
+
+    set(v: number): void {
+        const gl = this.context.gl;
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, v);
+    }
+
+    get(): number {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.UNPACK_ALIGNMENT);
+    }
+}
+
+class PixelStoreUnpackPremultiplyAlpha extends ContextValue implements Value<boolean> {
+    static default() { return false; }
+
+    set(v: boolean): void {
+        const gl = this.context.gl;
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (v: any));
+    }
+
+    get(): boolean {
+        const gl = this.context.gl;
+        return gl.getParameter(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL);
+    }
+}
+
+// class PointSize extends ContextValue implements Value<any> {}
+// class PixelZoom extends ContextValue implements Value<any> {}
+// class RasterPos extends ContextValue implements Value<any> {}
+// class PixelTransferDepth extends ContextValue implements Value<any> {}
+// class PixelTransferStencil extends ContextValue implements Value<any> {}
+    // aota not in webgl?
+
+
 module.exports = {
     ClearColor,
     ClearDepth,
@@ -296,4 +468,20 @@ module.exports = {
     BlendEquation,
     BlendFunc,
     BlendColor,
+
+    // Program,
+    LineWidth,
+    ActiveTextureUnit,
+    // Viewport,
+    // ScissorTest,
+    BindFramebuffer,
+    BindRenderbuffer,
+    BindTexture,
+    BindVertexBuffer,
+    BindElementBuffer,
+    // BindVertexArray,
+    // VertexAttribute,
+    // PixelStorePack,
+    PixelStoreUnpack,
+    PixelStoreUnpackPremultiplyAlpha,
 };

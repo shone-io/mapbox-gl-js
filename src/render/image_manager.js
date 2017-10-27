@@ -183,7 +183,7 @@ class ImageManager {
     bind(context: Context) {
         const gl = context.gl;      // TODO
         if (!this.atlasTexture) {
-            this.atlasTexture = new Texture(gl, this.atlasImage, gl.RGBA);
+            this.atlasTexture = new Texture(context, this.atlasImage, gl.RGBA);
         } else if (this.dirty) {
             this.atlasTexture.update(this.atlasImage);
             this.dirty = false;

@@ -254,12 +254,12 @@ class Tile {
         const gl = context.gl;  // TODO this is temporary, obviously; we will wrap texture into context better
 
         if (this.iconAtlasImage) {
-            this.iconAtlasTexture = new Texture(gl, this.iconAtlasImage, gl.RGBA);
+            this.iconAtlasTexture = new Texture(context, this.iconAtlasImage, gl.RGBA);
             this.iconAtlasImage = null;
         }
 
         if (this.glyphAtlasImage) {
-            this.glyphAtlasTexture = new Texture(gl, this.glyphAtlasImage, gl.ALPHA);
+            this.glyphAtlasTexture = new Texture(context, this.glyphAtlasImage, gl.ALPHA);
             this.glyphAtlasImage = null;
         }
     }

@@ -97,7 +97,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             setSymbolDrawState(program, painter, layer, isText, rotateInShader, pitchWithMap, sizeData);
         }
 
-        gl.activeTexture(gl.TEXTURE0);
+        context.activeTexture.set(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.u_texture, 0);
 
         if (isText) {
