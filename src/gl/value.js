@@ -1,6 +1,18 @@
 // @flow
 
+// const {enums} = require('./types');
+
 import type Context from './context';
+import type {
+    BlendFuncType,
+    ColorType,
+    ColorMaskType,
+    DepthRangeType,
+    StencilFuncType,
+    StencilOpType,
+    DepthFuncType,
+    BlendEquationType,
+} from './types';
 
 export interface Value<T> {
     context: Context;
@@ -17,14 +29,14 @@ class ContextValue {
     }
 }
 
-class ClearColor extends ContextValue implements Value<Array<number>> {
+class ClearColor extends ContextValue implements Value<ColorType> {
     static default() { return [0, 0, 0, 0]; }
 
-    set(v: Array<number>): void {
+    set(v: ColorType): void {
         this.context.gl.clearColor(v[0], v[1], v[2], v[3]);
     }
 
-    get(): Array<number> {
+    get(): ColorType {
         const gl = this.context.gl;
         return gl.getParameter(gl.COLOR_CLEAR_VALUE);
     }
@@ -56,14 +68,14 @@ class ClearStencil extends ContextValue implements Value<number> {
     }
 }
 
-class ColorMask extends ContextValue implements Value<Array<boolean>> {
+class ColorMask extends ContextValue implements Value<ColorMaskType> {
     static default() { return [true, true, true, true]; }
 
-    set(v: Array<boolean>): void {
+    set(v: ColorMaskType): void {
         this.context.gl.colorMask(v[0], v[1], v[2], v[3]);
     }
 
-    get(): Array<boolean> {
+    get(): ColorMaskType {
         const gl = this.context.gl;
         return gl.getParameter(gl.COLOR_WRITEMASK);
     }
@@ -95,12 +107,6 @@ class StencilMask extends ContextValue implements Value<number> {
     }
 }
 
-export type StencilFuncType = {
-    func: any,  // TODO ????
-    ref: number,
-    mask: number
-};
-
 class StencilFunc extends ContextValue implements Value<StencilFuncType> {
     static default(context: Context) {
         return {
@@ -124,34 +130,22 @@ class StencilFunc extends ContextValue implements Value<StencilFuncType> {
     }
 }
 
-class StencilOpType {    // TODO move me to a utility defn file; also, i do not like this yet
-    sfail: number;
-    dpfail: number;
-    dppass: number;
-
-    constructor(sfail: number, dpfail: number, dppass: number) {
-        this.sfail = sfail;
-        this.dpfail = dpfail;
-        this.dppass = dppass;
-    }
-}
-
 class StencilOp extends ContextValue implements Value<StencilOpType> {
     static default(context: Context) {
         const gl = context.gl;
-        return new StencilOpType(gl.KEEP, gl.KEEP, gl.KEEP);
+        return [gl.KEEP, gl.KEEP, gl.KEEP];
     }
 
     set(v: StencilOpType): void {
-        this.context.gl.stencilOp(v.sfail, v.dpfail, v.dppass);
+        this.context.gl.stencilOp(v[0], v[1], v[2]);
     }
 
     get(): StencilOpType {
         const gl = this.context.gl;
-        return new StencilOpType(gl.getParameter(gl.STENCIL_FAIL),
+        return [gl.getParameter(gl.STENCIL_FAIL),
             gl.getParameter(gl.STENCIL_PASS_DEPTH_FAIL),
             gl.getParameter(gl.STENCIL_PASS_DEPTH_PASS)
-        );
+        ];
     }
 }
 
@@ -173,14 +167,14 @@ class StencilTest extends ContextValue implements Value<boolean> {
     }
 }
 
-class DepthRange extends ContextValue implements Value<Array<number>> {
+class DepthRange extends ContextValue implements Value<DepthRangeType> {
     static default() { return [0, 1]; }
 
-    set(v: Array<number>): void {
+    set(v: DepthRangeType): void {
         this.context.gl.depthRange(v[0], v[1]);
     }
 
-    get(): Array<number> {
+    get(): DepthRangeType {
         const gl = this.context.gl;
         return gl.getParameter(gl.DEPTH_RANGE);
     }
@@ -204,16 +198,16 @@ class DepthTest extends ContextValue implements Value<boolean> {
     }
 }
 
-class DepthFunc extends ContextValue implements Value<number> {
+class DepthFunc extends ContextValue implements Value<DepthFuncType> {
     static default(context: Context) {
         return context.gl.LESS;
     }
 
-    set(v: number): void {
+    set(v: DepthFuncType): void {
         this.context.gl.depthFunc(v);
     }
 
-    get(): number {
+    get(): DepthFuncType {
         const gl = this.context.gl;
         return gl.getParameter(gl.DEPTH_FUNC);
     }
@@ -237,36 +231,33 @@ class Blend extends ContextValue implements Value<boolean> {
     }
 }
 
-class BlendEquation extends ContextValue implements Value<number> { // TODO see below note about GLenums
+class BlendEquation extends ContextValue implements Value<BlendEquationType> { // TODO see below note about GLenums
     static default(context: Context) {
         return context.gl.FUNC_ADD;
     }
 
-    set(v: number): void {
+    set(v: BlendEquationType): void {
         this.context.gl.blendEquation(v);
     }
 
-    get(): number {
+    get(): BlendEquationType {
         // TODO for this and others, we pick RGB or alpha -- ??
         const gl = this.context.gl;
         return gl.getParameter(gl.BLEND_EQUATION_RGB);
     }
 }
 
-class BlendFunc extends ContextValue implements Value<Array<number>> {
-    // TODO still on the fence between utility classes/defns for
-    // BlendFunc, DepthFunc etc -- clean up / figure out what
-    // to do with all GLenum values
+class BlendFunc extends ContextValue implements Value<BlendFuncType> {
     static default(context: Context) {
         const gl = context.gl;
         return [gl.ONE, gl.ZERO];
     }
 
-    set(v: Array<number>): void {
+    set(v: BlendFuncType): void {
         this.context.gl.blendFunc(v[0], v[1]);
     }
 
-    get(): Array<number> {
+    get(): BlendFuncType {
         // note in native these are statically cast to ColorMode::BlendFactor -- for type cleanup
         const gl = this.context.gl;
         return [
@@ -276,14 +267,14 @@ class BlendFunc extends ContextValue implements Value<Array<number>> {
     }
 }
 
-class BlendColor extends ContextValue implements Value<Array<number>> {
+class BlendColor extends ContextValue implements Value<ColorType> {
     static default() { return [0, 0, 0, 0]; }
 
-    set(v: Array<number>): void {
+    set(v: ColorType): void {
         this.context.gl.blendColor(v[0], v[1], v[2], v[3]);
     }
 
-    get(): Array<number> {
+    get(): ColorType {
         const gl = this.context.gl;
         return gl.getParameter(gl.BLEND_COLOR);
     }
@@ -296,7 +287,6 @@ module.exports = {
     DepthMask,
     StencilMask,
     StencilFunc,
-    StencilOpType,
     StencilOp,
     StencilTest,
     DepthRange,

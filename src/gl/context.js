@@ -25,32 +25,41 @@ const {
 
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
 import type {StructArray} from '../util/struct_array';
-import type {StencilFuncType, StencilOpType} from './value';
+import type {
+    BlendFuncType,
+    ColorType,
+    ColorMaskType,
+    DepthRangeType,
+    StencilFuncType,
+    DepthFuncType,
+    StencilOpType,
+    BlendEquationType
+} from './types';
 
 type ClearArgs = {
-    color?: Array<number>,
+    color?: ColorType,
     depth?: number,
     stencil?: number            // TODO somehow we need to figure out how to use defaults :thinking:
 };
 
 class Context {
     gl: WebGLRenderingContext;
-    clearColor: State<Array<number>>;
+    clearColor: State<ColorType>;
     clearDepth: State<number>;
     clearStencil: State<number>;
-    colorMask: State<Array<boolean>>;
+    colorMask: State<ColorMaskType>;
     depthMask: State<boolean>;
     stencilMask: State<number>;
     stencilFunc: State<StencilFuncType>;
     stencilOp: State<StencilOpType>;
     stencilTest: State<boolean>;
-    depthRange: State<Array<number>>;
+    depthRange: State<DepthRangeType>;
     depthTest: State<boolean>;
-    depthFunc: State<number>;
+    depthFunc: State<DepthFuncType>;
     blend: State<boolean>;
-    blendEquation: State<number>;
-    blendFunc: State<Array<number>>;
-    blendColor: State<Array<number>>;
+    blendEquation: State<BlendEquationType>;
+    blendFunc: State<BlendFuncType>;
+    blendColor: State<ColorType>;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;

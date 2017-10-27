@@ -16,7 +16,6 @@ const Program = require('./program');
 const Context = require('../gl/context');
 const RenderTexture = require('./render_texture');
 const updateTileMasks = require('./tile_mask');
-const {StencilOpType} = require('../gl/value');
 
 const draw = {
     symbol: require('./draw_symbol'),
@@ -145,7 +144,7 @@ class Painter {
         // We are blending the new pixels *behind* the existing pixels. That way we can
         // draw front-to-back and use then stencil buffer to cull opaque pixels early.
         context.blend.set(true);
-        context.blendFunc.set([gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
+        context.blendFunc.set([gl.LINES, gl.ONE_MINUS_SRC_ALPHA]);
 
         context.stencilTest.set(true);
 
@@ -257,7 +256,7 @@ class Painter {
         context.stencilMask.set(0xFF);
         // Tests will always pass, and ref value will be written to stencil buffer.
         // TODO eventually we'll probably have to map these to safer enums:
-        context.stencilOp.set(new StencilOpType(gl.KEEP, gl.KEEP, gl.REPLACE)); // TODO this is clunky -- maybe use array, or a class w constructor
+        context.stencilOp.set([gl.KEEP, gl.KEEP, gl.REPLACE]);
 
         let idNext = 1;
         this._tileClippingMaskIDs = {};
