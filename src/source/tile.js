@@ -251,7 +251,7 @@ class Tile {
             }
         }
 
-        const gl = context.gl;  // TODO this is temporary, obviously; we will wrap texture into context better
+        const gl = context.gl;
 
         if (this.iconAtlasImage) {
             this.iconAtlasTexture = new Texture(context, this.iconAtlasImage, gl.RGBA);

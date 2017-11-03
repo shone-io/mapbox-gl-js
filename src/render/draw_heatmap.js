@@ -59,7 +59,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
         program.draw(
-            painter.context,    // TODO make consistent between draw calls (accessing painter.context or keeping temp const ref to context)
+            context,
             gl.TRIANGLES,
             layer.id,
             bucket.layoutVertexBuffer,
@@ -76,7 +76,7 @@ function renderToTexture(context, painter, layer) {
     context.activeTexture.set(gl.TEXTURE1);
 
     // Use a 4x downscaled screen texture for better performance
-    gl.viewport(0, 0, painter.width / 4, painter.height / 4);
+    context.viewport.set([0, 0, painter.width / 4, painter.height / 4]);
 
     let texture = layer.heatmapTexture;
     let fbo = layer.heatmapFbo;
@@ -130,7 +130,7 @@ function renderTextureToMap(context, painter, layer) {
 
     const program = painter.useProgram('heatmapTexture');
 
-    gl.viewport(0, 0, painter.width, painter.height);
+    context.viewport.set([0, 0, painter.width, painter.height]);
 
     context.activeTexture.set(gl.TEXTURE0);
     context.bindTexture.set(layer.heatmapTexture);

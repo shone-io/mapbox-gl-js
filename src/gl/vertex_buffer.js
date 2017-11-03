@@ -77,7 +77,6 @@ class VertexBuffer {
         }
     }
 
-    // TODO !!! move this whole class into context
     /**
      * Set the attribute pointers in a WebGL context
      * @param gl The WebGL context

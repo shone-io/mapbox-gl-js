@@ -192,7 +192,7 @@ class ImageSource extends Evented implements Source {
     }
 
     _prepareImage(context: Context, image: ImageTextureSource, resize?: boolean) {
-        const gl = context.gl;  // TODO
+        const gl = context.gl;
         if (!this.boundsBuffer) {
             this.boundsBuffer = context.createVertexBuffer(this._boundsArray);
         }

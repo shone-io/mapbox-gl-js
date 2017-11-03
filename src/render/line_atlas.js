@@ -131,7 +131,7 @@ class LineAtlas {
     }
 
     bind(context: Context) {
-        const gl = context.gl;  // TODO
+        const gl = context.gl;
         if (!this.texture) {
             this.texture = gl.createTexture();
             context.bindTexture.set(this.texture);

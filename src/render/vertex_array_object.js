@@ -8,6 +8,7 @@ import type IndexBuffer from '../gl/index_buffer';
 import type Context from '../gl/context';
 
 class VertexArrayObject {
+    context: Context;
     boundProgram: ?Program;
     boundVertexBuffer: ?VertexBuffer;
     boundVertexBuffer2: ?VertexBuffer;
@@ -16,7 +17,6 @@ class VertexArrayObject {
     boundDynamicVertexBuffer: ?VertexBuffer;
     boundDynamicVertexBuffer2: ?VertexBuffer;
     vao: any;
-    gl: WebGLRenderingContext;
 
     constructor() {
         this.boundProgram = null;
@@ -37,11 +37,7 @@ class VertexArrayObject {
          dynamicVertexBuffer: ?VertexBuffer,
          dynamicVertexBuffer2: ?VertexBuffer) {
 
-        const gl = context.gl;
-
-        if (gl.extVertexArrayObject === undefined) {
-            (gl: any).extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
-        }
+        this.context = context;
 
         const isFreshBindRequired = (
             !this.vao ||
@@ -54,11 +50,10 @@ class VertexArrayObject {
             this.boundDynamicVertexBuffer2 !== dynamicVertexBuffer2
         );
 
-        if (!gl.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(gl, program, layoutVertexBuffer, indexBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer, dynamicVertexBuffer2);
-            this.gl = gl;
+        if (!context.extVertexArrayObject || isFreshBindRequired) {
+            this.freshBind(program, layoutVertexBuffer, indexBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer, dynamicVertexBuffer2);
         } else {
-            (gl: any).extVertexArrayObject.bindVertexArrayOES(this.vao);
+            context.bindVertexArrayOES.set(this.vao);
 
             if (dynamicVertexBuffer) {
                 // The buffer may have been updated. Rebind to upload data.
@@ -75,8 +70,7 @@ class VertexArrayObject {
         }
     }
 
-    freshBind(gl: WebGLRenderingContext,    // TODO
-              program: Program,
+    freshBind(program: Program,
               layoutVertexBuffer: VertexBuffer,
               indexBuffer: ?IndexBuffer,
               vertexBuffer2: ?VertexBuffer,
@@ -86,10 +80,13 @@ class VertexArrayObject {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
-        if (gl.extVertexArrayObject) {
+        const context = this.context;
+        const gl = context.gl;
+
+        if (context.extVertexArrayObject) {
             if (this.vao) this.destroy();
-            this.vao = (gl: any).extVertexArrayObject.createVertexArrayOES();
-            (gl: any).extVertexArrayObject.bindVertexArrayOES(this.vao);
+            this.vao = context.extVertexArrayObject.createVertexArrayOES();
+            context.bindVertexArrayOES.set(this.vao);
             numPrevAttributes = 0;
 
             // store the arguments so that we can verify them when the vao is bound again
@@ -102,7 +99,7 @@ class VertexArrayObject {
             this.boundDynamicVertexBuffer2 = dynamicVertexBuffer2;
 
         } else {
-            numPrevAttributes = (gl: any).currentNumAttributes || 0;
+            numPrevAttributes = context.currentNumAttributes || 0;
 
             // Disable all attributes from the previous program that aren't used in
             // the new program. Note: attribute indices are *not* program specific!
@@ -143,12 +140,12 @@ class VertexArrayObject {
             dynamicVertexBuffer2.setVertexAttribPointers(gl, program, vertexOffset);
         }
 
-        (gl: any).currentNumAttributes = numNextAttributes;
+        context.currentNumAttributes = numNextAttributes;
     }
 
     destroy() {
         if (this.vao) {
-            (this.gl: any).extVertexArrayObject.deleteVertexArrayOES(this.vao);
+            this.context.extVertexArrayObject.deleteVertexArrayOES(this.vao);
             this.vao = null;
         }
     }

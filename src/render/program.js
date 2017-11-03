@@ -16,7 +16,6 @@ export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>;
 
 class Program {
-    context: Context;   // TODO: remove i think -- in native, Context is used as an argument but not stored as a reference member
     program: WebGLProgram;
     uniforms: {[string]: WebGLUniformLocation};
     attributes: {[string]: number};
@@ -93,7 +92,7 @@ class Program {
          dynamicLayoutBuffer: ?VertexBuffer,
          dynamicLayoutBuffer2: ?VertexBuffer) {
 
-        const gl = context.gl;  // TODO
+        const gl = context.gl;
 
         const primitiveSize = {
             [gl.LINES]: 2,

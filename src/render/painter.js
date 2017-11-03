@@ -86,7 +86,7 @@ class Painter {
     lineAtlas: LineAtlas;
     imageManager: ImageManager;
     glyphManager: GlyphManager;
-    depthRange: number;             // TODO this is different from actual gl.depthRange -- is it an abstraction we want to keep or ?
+    depthRange: number;
     renderPass: RenderPass;
     currentLayer: number;
     id: string;
@@ -123,7 +123,7 @@ class Painter {
 
         this.width = width * browser.devicePixelRatio;
         this.height = height * browser.devicePixelRatio;
-        gl.viewport(0, 0, this.width, this.height);
+        this.context.viewport.set([0, 0, this.width, this.height]);
 
         if (this.style) {
             for (const layerId of this.style._order) {
@@ -132,14 +132,14 @@ class Painter {
         }
 
         if (this.depthRbo) {
-            this.context.gl.deleteRenderbuffer(this.depthRbo);
+            gl.deleteRenderbuffer(this.depthRbo);
             this.depthRbo = null;
         }
     }
 
     setup() {
         const context = this.context;
-        const gl = this.context.gl;     // TODO
+        const gl = this.context.gl;
 
         // We are blending the new pixels *behind* the existing pixels. That way we can
         // draw front-to-back and use then stencil buffer to cull opaque pixels early.
@@ -149,7 +149,7 @@ class Painter {
         context.stencilTest.set(true);
 
         context.depthTest.set(true);
-        context.depthFunc.set(context.gl.LEQUAL);   // bad
+        context.depthFunc.set(gl.LEQUAL);
 
         context.depthMask.set(false);
 
@@ -255,7 +255,6 @@ class Painter {
 
         context.stencilMask.set(0xFF);
         // Tests will always pass, and ref value will be written to stencil buffer.
-        // TODO eventually we'll probably have to map these to safer enums:
         context.stencilOp.set([gl.KEEP, gl.KEEP, gl.REPLACE]);
 
         let idNext = 1;
@@ -360,7 +359,7 @@ class Painter {
                 renderTarget.bindWithDepth(this.depthRbo);
 
                 if (first) {
-                    context.clear({ depth: 1 });    // TODO as above, in native, 1 is the default; somehow we should be able to remove value the arg here?
+                    context.clear({ depth: 1 });
                     first = false;
                 }
 
@@ -371,7 +370,7 @@ class Painter {
         }
 
         // Clear buffers in preparation for drawing to the main framebuffer
-        context.clear({ color: [0, 0, 0, 0], depth: 1 });       // TODO see above `context.clear`s
+        context.clear({ color: [0, 0, 0, 0], depth: 1 });
 
         this.showOverdrawInspector(options.showOverdrawInspector);
 
@@ -559,13 +558,11 @@ class Painter {
     }
 
     useProgram(name: string, programConfiguration?: ProgramConfiguration): Program {
-        const gl = this.context.gl;
         const nextProgram = this._createProgramCached(name, programConfiguration || this.emptyProgramConfiguration);
 
-        if (this.currentProgram !== nextProgram) {
-            gl.useProgram(nextProgram.program);
-            this.currentProgram = nextProgram;
-        }
+        this.context.program.set(nextProgram.program);
+        // TODO previously we compared Program objects for equality,
+        // not WebGLPrograms. Does this matter/should we track Programs as state rather than WebGLPrograms?
 
         return nextProgram;
     }

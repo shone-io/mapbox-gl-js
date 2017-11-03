@@ -17,16 +17,18 @@ const {
     DepthTest,
     DepthFunc,
     Blend,
-    BlendEquation,
     BlendFunc,
     BlendColor,
-    ActiveTextureUnit,
+    Program,
     LineWidth,
+    ActiveTextureUnit,
+    Viewport,
     BindFramebuffer,
     BindRenderbuffer,
     BindTexture,
     BindVertexBuffer,
     BindElementBuffer,
+    BindVertexArrayOES,
     PixelStoreUnpack,
     PixelStoreUnpackPremultiplyAlpha,
 } = require('./value');
@@ -42,18 +44,26 @@ import type {
     StencilFuncType,
     DepthFuncType,
     StencilOpType,
-    BlendEquationType,
     TextureUnitType,
+    ViewportType,
 } from './types';
 
 type ClearArgs = {
     color?: ColorType,
     depth?: number,
-    stencil?: number            // TODO somehow we need to figure out how to use defaults :thinking:
+    stencil?: number
+    // TODO previously painter had `clearDepth`, `clearColor`, `clearStencil`
+    // methods so that callers wouldn't need to know appropriate/default values
+    // for clearing...should we still provide some such help or no? painter now
+    // calls context.clear in several places and has to know appropriate values
 };
+
 
 class Context {
     gl: WebGLRenderingContext;
+    extVertexArrayObject: any;
+    currentNumAttributes: ?number;
+
     clearColor: State<ColorType>;
     clearDepth: State<number>;
     clearStencil: State<number>;
@@ -67,21 +77,26 @@ class Context {
     depthTest: State<boolean>;
     depthFunc: State<DepthFuncType>;
     blend: State<boolean>;
-    blendEquation: State<BlendEquationType>;
     blendFunc: State<BlendFuncType>;
     blendColor: State<ColorType>;
-    lineWidth: State<number>
+    program: State<?WebGLProgram>;
+    lineWidth: State<number>;
     activeTexture: State<TextureUnitType>;
+    viewport: State<ViewportType>;
     bindFramebuffer: State<?WebGLFramebuffer>;
     bindRenderbuffer: State<?WebGLRenderbuffer>
     bindTexture: State<?WebGLTexture>;
     bindVertexBuffer: State<?WebGLBuffer>;
     bindElementBuffer: State<?WebGLBuffer>;
+    bindVertexArrayOES: State<any>;
     pixelStoreUnpack: State<number>;
     pixelStoreUnpackPremultiplyAlpha: State<boolean>;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
+        this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
+            // TODO is there any reason to wait to try to initialize this?
+
         this.clearColor = new State(new ClearColor(this));
         this.clearDepth = new State(new ClearDepth(this));
         this.clearStencil = new State(new ClearStencil(this));
@@ -95,21 +110,20 @@ class Context {
         this.depthTest = new State(new DepthTest(this));
         this.depthFunc = new State(new DepthFunc(this));
         this.blend = new State(new Blend(this));
-        this.blendEquation = new State(new BlendEquation(this));
         this.blendFunc = new State(new BlendFunc(this));
         this.blendColor = new State(new BlendColor(this));
+        this.program = new State(new Program(this));
         this.lineWidth = new State(new LineWidth(this));
         this.activeTexture = new State(new ActiveTextureUnit(this));
+        this.viewport = new State(new Viewport(this));
         this.bindFramebuffer = new State(new BindFramebuffer(this));
         this.bindRenderbuffer = new State(new BindRenderbuffer(this));
         this.bindTexture = new State(new BindTexture(this));
         this.bindVertexBuffer = new State(new BindVertexBuffer(this));
         this.bindElementBuffer = new State(new BindElementBuffer(this));
-        // TODO extensions -- OES_vertex_array_object, etc
+        this.bindVertexArrayOES = this.extVertexArrayObject && new State(new BindVertexArrayOES(this));
         this.pixelStoreUnpack = new State(new PixelStoreUnpack(this));
         this.pixelStoreUnpackPremultiplyAlpha = new State(new PixelStoreUnpackPremultiplyAlpha(this));
-
-
     }
 
     createIndexBuffer(array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
@@ -119,21 +133,6 @@ class Context {
     createVertexBuffer(array: StructArray, dynamicDraw?: boolean) {
         return new VertexBuffer(this, array, dynamicDraw);
     }
-    // TODO in native, Context also has an updateVertexBuffer method. the VertexBuffer class has that method; is there any reason to thread through Context or no?
-
-    createRenderbuffer(/* TODO */) {}
-
-    createFramebuffer(/* TODO */) {}
-
-    createTexture(/* TODO */) {}
-
-    updateTexture(/* TODO */) {}
-
-    bindTexture(/* TODO */) {}
-
-    deleteTexture(/* TODO */) {}
-    // TODO in native, all deleting is done in Context::performCleanup
-    // (are not separate methods) -- ??
 
     clear({color, depth, stencil}: ClearArgs) {
         const gl = this.gl;
@@ -157,16 +156,8 @@ class Context {
             this.stencilMask.set(0xFF);
         }
 
-        // TODO
         gl.clear(mask);
     }
-
-    setDepthMode(depth: any /* TODO DepthMode */) {}
-
-    setStencilMode(stencil: any /* TODO StencilMode */) {}
-
-    setColorMode(color: any /* TODO ColorMode */) {}
-
 }
 
 module.exports = Context;
