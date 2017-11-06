@@ -16,7 +16,6 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
     if (opacity.constantOr(1) === 0) return;
 
     const context = painter.context;
-    const gl = context.gl;
 
     painter.setDepthSublayer(0);
     context.depthMask.set(false);

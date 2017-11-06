@@ -9,7 +9,6 @@ const PosArray = require('../data/pos_array');
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type TileCoord from '../source/tile_coord';
-import type VertexBuffer from '../gl/vertex_buffer';
 
 module.exports = drawDebug;
 

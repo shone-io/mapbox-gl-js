@@ -21,7 +21,6 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     }
 
     const context = painter.context;
-    const gl = context.gl;
     context.stencilTest.set(true);
 
     const pass = (!layer.paint.get('fill-pattern') &&

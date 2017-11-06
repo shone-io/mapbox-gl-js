@@ -21,7 +21,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
     if (painter.renderPass === '3d') {
         const context = painter.context;
-        const gl = context.gl;
 
         context.stencilTest.set(false);
         context.depthTest.set(true);

@@ -1,6 +1,5 @@
 // @flow
 
-import type Context from './context';
 import type {Value} from './value';
 
 class State<T> {

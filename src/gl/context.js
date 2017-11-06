@@ -1,5 +1,4 @@
 // @flow
-const assert = require('assert');
 const IndexBuffer = require('./index_buffer');
 const VertexBuffer = require('./vertex_buffer');
 const State = require('./state');
@@ -95,7 +94,7 @@ class Context {
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
-            // TODO is there any reason to wait to try to initialize this?
+        // TODO is there any reason to wait to try to initialize this?
 
         this.clearColor = new State(new ClearColor(this));
         this.clearDepth = new State(new ClearDepth(this));

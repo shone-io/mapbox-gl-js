@@ -20,7 +20,6 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     if (painter.renderPass !== 'translucent') return;
 
     const context = painter.context;
-    const gl = context.gl;
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
     context.stencilTest.set(false);
