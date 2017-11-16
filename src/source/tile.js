@@ -210,7 +210,7 @@ class Tile {
         const collisionBoxArray = this.collisionBoxArray;
 
         if (bucket && bucket instanceof SymbolBucket && collisionBoxArray) {
-            const posMatrix = collisionIndex.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
+            const posMatrix = collisionIndex.transform.calculatePosMatrix(this.coord.toUnwrapped(this.sourceMaxZoom));
 
             const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
             const textPixelRatio = EXTENT / this.tileSize; // text size is not meant to be affected by scale

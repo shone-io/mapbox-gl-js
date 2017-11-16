@@ -43,7 +43,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         painter.setDepthSublayer(coord.z - minTileZ);
 
         const tile = sourceCache.getTile(coord);
-        const posMatrix = painter.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
+        const posMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped(sourceCache.getSource().maxzoom));
 
         tile.registerFadeDuration(painter.style.animationLoop, layer.getPaintValue('raster-fade-duration', {zoom: zoom}));
 

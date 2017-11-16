@@ -703,7 +703,7 @@ class SourceCache extends Evented {
     getVisibleCoordinates() {
         const coords = this.getRenderableIds().map(TileCoord.fromID);
         for (const coord of coords) {
-            coord.posMatrix = this.transform.calculatePosMatrix(coord, this._source.maxzoom);
+            coord.posMatrix = this.transform.calculatePosMatrix(coord.toUnwrapped(this._source.maxzoom));
         }
         return coords;
     }

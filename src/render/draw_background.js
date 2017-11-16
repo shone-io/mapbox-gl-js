@@ -46,7 +46,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         if (image) {
             pattern.setTile({coord, tileSize}, painter, program);
         }
-        gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.transform.calculatePosMatrix(coord));
+        gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.transform.calculatePosMatrix(coord.toUnwrapped()));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
     }
 }

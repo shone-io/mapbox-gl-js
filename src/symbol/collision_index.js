@@ -228,7 +228,7 @@ class CollisionIndex {
             return result;
         }
 
-        const posMatrix = this.transform.calculatePosMatrix(tileCoord, tileSourceMaxZoom);
+        const posMatrix = this.transform.calculatePosMatrix(tileCoord.toUnwrapped(tileSourceMaxZoom));
 
         const query = [];
         let minX = Infinity;

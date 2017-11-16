@@ -7,6 +7,7 @@ const LngLat = require('./lng_lat'),
     interp = require('../style-spec/util/interpolate').number,
     tileCover = require('../util/tile_cover'),
     TileCoord = require('../source/tile_coord'),
+    UnwrappedTileID = require('../source/tile_id').UnwrappedTileID,
     EXTENT = require('../data/extent'),
     glmatrix = require('@mapbox/gl-matrix');
 
@@ -240,7 +241,7 @@ class Transform {
             this.pointCoordinate(new Point(0, this.height), z)
         ];
         return tileCover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, this._renderWorldCopies)
-            .map((coord) => coord.toOld())
+            .map((coord) => TileCoord.fromOverscaled(coord))
             .sort((a, b) => centerPoint.dist(a) - centerPoint.dist(b));
     }
 
@@ -395,24 +396,20 @@ class Transform {
 
     /**
      * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
-     * @param {TileCoord} tileCoord
-     * @param {number} maxZoom maximum source zoom to account for overscaling
+     * @param {UnwrappedTileID} unwrappedTileID;
      */
-    calculatePosMatrix(tileCoord: TileCoord, maxZoom?: number): Float32Array {
-        let posMatrixKey = tileCoord.id.toString();
-        if (maxZoom) {
-            posMatrixKey += maxZoom.toString();
-        }
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+        let posMatrixKey = unwrappedTileID.id.toString();
         if (this._posMatrixCache[posMatrixKey]) {
             return this._posMatrixCache[posMatrixKey];
         }
-        // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
-        // so calculate the matrix the maxzoom tile would use.
-        const coord = tileCoord.toCoordinate(maxZoom);
-        const scale = this.worldSize / this.zoomScale(coord.zoom);
+
+        const canonical = unwrappedTileID.canonical;
+        const scale = this.worldSize / this.zoomScale(canonical.z);
+        const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
 
         const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [coord.column * scale, coord.row * scale, 0]);
+        mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
         mat4.multiply(posMatrix, this.projMatrix, posMatrix);
 

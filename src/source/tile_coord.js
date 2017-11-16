@@ -3,6 +3,9 @@
 const assert = require('assert');
 const WhooTS = require('@mapbox/whoots-js');
 const Coordinate = require('../geo/coordinate');
+const UnwrappedTileID = require('./tile_id').UnwrappedTileID;
+const CanonicalTileID = require('./tile_id').CanonicalTileID;
+const OverscaledTileID = require('./tile_id').OverscaledTileID;
 
 /**
  * @module TileCoord
@@ -39,16 +42,16 @@ class TileCoord {
         (this: any).posMatrix = null;
     }
 
-    toString() {
-        return `${this.z}/${this.x}/${this.y}`;
+    toUnwrapped(sourceMaxZoom?: number) {
+        return new UnwrappedTileID(this.w, new CanonicalTileID(Math.min(sourceMaxZoom || Infinity, this.z), this.x, this.y));
     }
 
-    toCoordinate(sourceMaxZoom: number | void) {
-        const zoom = Math.min(this.z, sourceMaxZoom === undefined ? this.z : sourceMaxZoom);
-        const tileScale = Math.pow(2, zoom);
-        const row = this.y;
-        const column = this.x + tileScale * this.w;
-        return new Coordinate(column, row, zoom);
+    static fromOverscaled(overscaled: OverscaledTileID) {
+         return new TileCoord(overscaled.overscaledZ, overscaled.canonical.x, overscaled.canonical.y, overscaled.wrap);
+    }
+
+    toString() {
+        return `${this.z}/${this.x}/${this.y}`;
     }
 
     // given a list of urls, choose a url template and return a tile URL
