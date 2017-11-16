@@ -46,6 +46,10 @@ class TileCoord {
         return new UnwrappedTileID(this.w, new CanonicalTileID(Math.min(sourceMaxZoom || Infinity, this.z), this.x, this.y));
     }
 
+    toOverscaled(sourceMaxZoom?: number) {
+        return new OverscaledTileID(this.z, this.w, new CanonicalTileID(Math.min(sourceMaxZoom || Infinity, this.z), this.x, this.y));
+    }
+
     static fromOverscaled(overscaled: OverscaledTileID) {
          return new TileCoord(overscaled.overscaledZ, overscaled.canonical.x, overscaled.canonical.y, overscaled.wrap);
     }
@@ -115,19 +119,6 @@ class TileCoord {
             new TileCoord(z, x, y + 1, this.w),
             new TileCoord(z, x + 1, y + 1, this.w)
         ];
-    }
-
-    scaledTo(targetZ: number, sourceMaxZoom: number) {
-        // the id represents an overscaled tile, return the same coordinates with a lower z
-        if (this.z > sourceMaxZoom) {
-            return new TileCoord(targetZ, this.x, this.y, this.w);
-        }
-
-        if (targetZ <= this.z) {
-            return new TileCoord(targetZ, this.x >> (this.z - targetZ), this.y >> (this.z - targetZ), this.w); // parent or same
-        } else {
-            return new TileCoord(targetZ, this.x << (targetZ - this.z), this.y << (targetZ - this.z), this.w); // child
-        }
     }
 
     /**

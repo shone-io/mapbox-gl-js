@@ -496,7 +496,7 @@ class SourceCache extends Evented {
                     // We couldn't find child tiles that entirely cover the ideal tile.
                     for (let overscaledZ = zoom - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
 
-                        const parentId = coord.scaledTo(overscaledZ, this._source.maxzoom);
+                        const parentId = TileCoord.fromOverscaled(coord.toOverscaled(this._source.maxzoom).scaledTo(overscaledZ));
                         if (checked[parentId.id]) {
                             // Break parent tile ascent, this route has been previously checked by another child.
                             break;

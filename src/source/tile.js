@@ -191,7 +191,7 @@ class Tile {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (bucket instanceof SymbolBucket) {
-                crossTileSymbolIndex.addTileLayer(id, this.coord, this.sourceMaxZoom, bucket.symbolInstances);
+                crossTileSymbolIndex.addTileLayer(id, this.coord.toOverscaled(), bucket.symbolInstances);
             }
         }
     }
@@ -200,7 +200,7 @@ class Tile {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (bucket instanceof SymbolBucket) {
-                crossTileSymbolIndex.removeTileLayer(id, this.coord, this.sourceMaxZoom);
+                crossTileSymbolIndex.removeTileLayer(id, this.coord.toOverscaled());
             }
         }
     }
