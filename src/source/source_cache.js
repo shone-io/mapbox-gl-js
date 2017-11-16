@@ -373,8 +373,8 @@ class SourceCache extends Evented {
         let idealTileCoords;
         if (!this.used) {
             idealTileCoords = [];
-        } else if (this._source.coord) {
-            idealTileCoords = transform.getVisibleUnwrappedCoordinates((this._source.coord: any).toCanonical()).map((id) => TileCoord.fromUnwrapped(id));
+        } else if (this._source.tileID) {
+            idealTileCoords = transform.getVisibleUnwrappedCoordinates((this._source.tileID: any)).map((id) => TileCoord.fromUnwrapped(id));
         } else {
             idealTileCoords = transform.coveringTiles({
                 tileSize: this._source.tileSize,

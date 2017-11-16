@@ -1,6 +1,5 @@
 // @flow
 
-const TileCoord = require('./tile_coord');
 const assert = require('assert');
 
 class CanonicalTileID {
@@ -15,6 +14,10 @@ class CanonicalTileID {
         this.z = z;
         this.x = x;
         this.y = y;
+    }
+
+    equals(id: CanonicalTileID) {
+        return this.z === id.z && this.x === id.x && this.y === id.y;
     }
 }
 
