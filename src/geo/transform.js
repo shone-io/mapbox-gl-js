@@ -5,6 +5,7 @@ const LngLat = require('./lng_lat'),
     Coordinate = require('./coordinate'),
     util = require('../util/util'),
     interp = require('../style-spec/util/interpolate').number,
+    tileCover = require('../util/tile_cover'),
     TileCoord = require('../source/tile_coord'),
     EXTENT = require('../data/extent'),
     glmatrix = require('@mapbox/gl-matrix');
@@ -238,7 +239,8 @@ class Transform {
             this.pointCoordinate(new Point(this.width, this.height), z),
             this.pointCoordinate(new Point(0, this.height), z)
         ];
-        return TileCoord.cover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, this._renderWorldCopies)
+        return tileCover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, this._renderWorldCopies)
+            .map((coord) => coord.toOld())
             .sort((a, b) => centerPoint.dist(a) - centerPoint.dist(b));
     }
 
