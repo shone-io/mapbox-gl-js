@@ -8,6 +8,7 @@ const LngLat = require('./lng_lat'),
     tileCover = require('../util/tile_cover'),
     TileCoord = require('../source/tile_coord'),
     UnwrappedTileID = require('../source/tile_id').UnwrappedTileID,
+    CanonicalTileID = require('../source/tile_id').CanonicalTileID,
     EXTENT = require('../data/extent'),
     glmatrix = require('@mapbox/gl-matrix');
 
@@ -191,15 +192,15 @@ class Transform {
      *
      * @private
      */
-    getVisibleWrappedCoordinates(tileCoord: TileCoord) {
+    getVisibleUnwrappedCoordinates(tileID: CanonicalTileID) {
         const ul = this.pointCoordinate(new Point(0, 0), 0);
         const ur = this.pointCoordinate(new Point(this.width, 0), 0);
         const w0 = Math.floor(ul.column);
         const w1 = Math.floor(ur.column);
-        const result = [tileCoord];
+        const result = [new UnwrappedTileID(0, tileID)];
         for (let w = w0; w <= w1; w++) {
             if (w === 0) continue;
-            result.push(new TileCoord(tileCoord.z, tileCoord.x, tileCoord.y, w));
+            result.push(new UnwrappedTileID(w, tileID));
         }
         return result;
     }

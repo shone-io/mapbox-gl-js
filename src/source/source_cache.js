@@ -374,7 +374,7 @@ class SourceCache extends Evented {
         if (!this.used) {
             idealTileCoords = [];
         } else if (this._source.coord) {
-            idealTileCoords = transform.getVisibleWrappedCoordinates((this._source.coord: any));
+            idealTileCoords = transform.getVisibleUnwrappedCoordinates((this._source.coord: any).toCanonical()).map((id) => TileCoord.fromUnwrapped(id));
         } else {
             idealTileCoords = transform.coveringTiles({
                 tileSize: this._source.tileSize,

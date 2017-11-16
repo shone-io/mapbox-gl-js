@@ -42,12 +42,20 @@ class TileCoord {
         (this: any).posMatrix = null;
     }
 
+    toCanonical(sourceMaxZoom?: number) {
+        return new CanonicalTileID(Math.min(sourceMaxZoom || Infinity, this.z), this.x, this.y);
+    }
+
     toUnwrapped(sourceMaxZoom?: number) {
         return new UnwrappedTileID(this.w, new CanonicalTileID(Math.min(sourceMaxZoom || Infinity, this.z), this.x, this.y));
     }
 
     toOverscaled(sourceMaxZoom?: number) {
         return new OverscaledTileID(this.z, this.w, new CanonicalTileID(Math.min(sourceMaxZoom || Infinity, this.z), this.x, this.y));
+    }
+
+    static fromUnwrapped(unwrapped: UnwrappedTileID) {
+         return new TileCoord(unwrapped.canonical.z, unwrapped.canonical.x, unwrapped.canonical.y, unwrapped.wrap);
     }
 
     static fromOverscaled(overscaled: OverscaledTileID) {
