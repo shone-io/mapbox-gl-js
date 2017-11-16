@@ -382,7 +382,7 @@ class SourceCache extends Evented {
                 maxzoom: this._source.maxzoom,
                 roundZoom: this._source.roundZoom,
                 reparseOverscaled: this._source.reparseOverscaled
-            });
+            }).map((coord) => TileCoord.fromOverscaled(coord));
 
             if (this._source.hasTile) {
                 idealTileCoords = idealTileCoords.filter((coord) => (this._source.hasTile: any)(coord));

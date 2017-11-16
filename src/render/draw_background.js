@@ -1,6 +1,7 @@
 // @flow
 
 const pattern = require('./pattern');
+const TileCoord = require('../source/tile_coord');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -40,7 +41,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     gl.uniform1f(program.uniforms.u_opacity, opacity);
 
-    const coords = transform.coveringTiles({tileSize});
+    const coords = transform.coveringTiles({tileSize}).map((coord) => TileCoord.fromOverscaled(coord));
 
     for (const coord of coords) {
         if (image) {

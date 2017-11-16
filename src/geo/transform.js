@@ -6,7 +6,6 @@ const LngLat = require('./lng_lat'),
     util = require('../util/util'),
     interp = require('../style-spec/util/interpolate').number,
     tileCover = require('../util/tile_cover'),
-    TileCoord = require('../source/tile_coord'),
     UnwrappedTileID = require('../source/tile_id').UnwrappedTileID,
     CanonicalTileID = require('../source/tile_id').CanonicalTileID,
     EXTENT = require('../data/extent'),
@@ -242,8 +241,7 @@ class Transform {
             this.pointCoordinate(new Point(0, this.height), z)
         ];
         return tileCover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, this._renderWorldCopies)
-            .map((coord) => TileCoord.fromOverscaled(coord))
-            .sort((a, b) => centerPoint.dist(a) - centerPoint.dist(b));
+            .sort((a, b) => centerPoint.dist(a.canonical) - centerPoint.dist(b.canonical));
     }
 
     resize(width: number, height: number) {
