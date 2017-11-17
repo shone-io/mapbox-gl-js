@@ -75,8 +75,8 @@ class VectorTileSource extends Evented implements Source {
         });
     }
 
-    hasTile(coord: TileCoord) {
-        return !this.tileBounds || this.tileBounds.contains(coord, this.maxzoom);
+    hasTile(tileID: OverscaledTileID) {
+        return !this.tileBounds || this.tileBounds.contains(tileID.canonical, this.maxzoom);
     }
 
     onAdd(map: Map) {

@@ -11,7 +11,8 @@ const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const arraysIntersect = require('../util/util').arraysIntersect;
-const TileCoord = require('../source/tile_coord');
+const OverscaledTileID = require('../source/tile_id').OverscaledTileID;
+const CanonicalTileID = require('../source/tile_id').CanonicalTileID;
 
 import type CollisionIndex from '../symbol/collision_index';
 import type StyleLayer from '../style/style_layer';
@@ -45,7 +46,7 @@ type QueryParameters = {
 }
 
 export type SerializedFeatureIndex = {
-    coord: TileCoord,
+    tileID: OverscaledTileID,
     overscaling: number,
     grid: ArrayBuffer,
     featureIndexArray: SerializedStructArray,
@@ -53,7 +54,7 @@ export type SerializedFeatureIndex = {
 }
 
 class FeatureIndex {
-    coord: TileCoord;
+    tileID: OverscaledTileID;
     overscaling: number;
     x: number;
     y: number;
@@ -71,9 +72,9 @@ class FeatureIndex {
 
     static deserialize(serialized: SerializedFeatureIndex,
                        rawTileData: ArrayBuffer) {
-        const coord = serialized.coord;
+        const tileID = serialized.tileID;
         const self = new FeatureIndex(
-            new TileCoord(coord.z, coord.x, coord.y, coord.w),
+            new OverscaledTileID(tileID.overscaledZ, tileID.wrap, new CanonicalTileID(tileID.canonical.z, tileID.canonical.x, tileID.canonical.y)),
             serialized.overscaling,
             new Grid(serialized.grid),
             new FeatureIndexArray(serialized.featureIndexArray));
@@ -84,15 +85,15 @@ class FeatureIndex {
         return self;
     }
 
-    constructor(coord: TileCoord,
+    constructor(tileID: OverscaledTileID,
                 overscaling: number,
                 grid?: Grid,
                 featureIndexArray?: FeatureIndexArray) {
-        this.coord = coord;
+        this.tileID = tileID;
         this.overscaling = overscaling;
-        this.x = coord.x;
-        this.y = coord.y;
-        this.z = coord.z - Math.log(overscaling) / Math.LN2;
+        this.x = tileID.canonical.x;
+        this.y = tileID.canonical.y;
+        this.z = tileID.canonical.z;
         this.grid = grid || new Grid(EXTENT, 16, 0);
         this.featureIndexArray = featureIndexArray || new FeatureIndexArray();
     }
@@ -127,7 +128,7 @@ class FeatureIndex {
             transferables.push(grid);
         }
         return {
-            coord: this.coord,
+            tileID: this.tileID,
             overscaling: this.overscaling,
             grid: grid,
             featureIndexArray: this.featureIndexArray.serialize(transferables),
@@ -171,7 +172,7 @@ class FeatureIndex {
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
         const matchingSymbols = this.collisionIndex ?
-            this.collisionIndex.queryRenderedSymbols(queryGeometry, this.coord, args.tileSourceMaxZoom, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID) :
+            this.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, args.tileSourceMaxZoom, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID) :
             [];
         matchingSymbols.sort();
         this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
