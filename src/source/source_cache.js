@@ -550,8 +550,7 @@ class SourceCache extends Evented {
 
         const cached = Boolean(tile);
         if (!cached) {
-            const overscaling = tileID.overscaleFactor();
-            tile = new Tile(tileID, this._source.tileSize * overscaling, this._source.maxzoom);
+            tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor());
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.id, tile.state));
         }
 

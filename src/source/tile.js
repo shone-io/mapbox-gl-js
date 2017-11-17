@@ -53,7 +53,6 @@ class Tile {
     uid: number;
     uses: number;
     tileSize: number;
-    sourceMaxZoom: number;
     buckets: {[string]: Bucket};
     iconAtlasImage: ?RGBAImage;
     iconAtlasTexture: Texture;
@@ -86,14 +85,12 @@ class Tile {
     /**
      * @param {OverscaledTileID} tileID 
      * @param size
-     * @param sourceMaxZoom
      */
-    constructor(tileID: OverscaledTileID, size: number, sourceMaxZoom: number) {
+    constructor(tileID: OverscaledTileID, size: number) {
         this.tileID = tileID;
         this.uid = util.uniqueId();
         this.uses = 0;
         this.tileSize = size;
-        this.sourceMaxZoom = sourceMaxZoom;
         this.buckets = {};
         this.expirationTime = null;
 
@@ -288,7 +285,6 @@ class Tile {
             bearing: bearing,
             params: params,
             additionalRadius: additionalRadius,
-            tileSourceMaxZoom: this.sourceMaxZoom,
             collisionBoxArray: this.collisionBoxArray,
             sourceID: sourceID
         }, layers);

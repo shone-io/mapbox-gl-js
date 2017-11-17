@@ -220,7 +220,7 @@ class CollisionIndex {
      *
      * @private
      */
-    queryRenderedSymbols(queryGeometry: any, tileCoord: OverscaledTileID, tileSourceMaxZoom: number, textPixelRatio: number, collisionBoxArray: any, sourceID: string) {
+    queryRenderedSymbols(queryGeometry: any, tileCoord: OverscaledTileID, textPixelRatio: number, collisionBoxArray: any, sourceID: string) {
         const sourceLayerFeatures = {};
         const result = [];
 
