@@ -359,7 +359,7 @@ class Tile {
             const maskCoord = mask[maskArray[i]];
             const vertexExtent = EXTENT >> maskCoord.overscaledZ;
             const tlVertex = new Point(maskCoord.canonical.x * vertexExtent, maskCoord.canonical.y * vertexExtent);
-            const brVertex = new Point(tlVertex.canonical.x + vertexExtent, tlVertex.canonical.y + vertexExtent);
+            const brVertex = new Point(tlVertex.x + vertexExtent, tlVertex.y + vertexExtent);
 
             // not sure why flow is complaining here because it doesn't complain at L401
             const segment = (this.segments: any).prepareSegment(4, maskedBoundsArray, indexArray);

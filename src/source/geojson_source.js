@@ -192,7 +192,7 @@ class GeoJSONSource extends Evented implements Source {
         const params = {
             type: this.type,
             uid: tile.uid,
-            coord: tile.tileID,
+            tileID: tile.tileID,
             zoom: tile.tileID.overscaledZ,
             maxZoom: this.maxzoom,
             tileSize: this.tileSize,

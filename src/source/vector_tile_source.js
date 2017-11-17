@@ -9,7 +9,7 @@ const ResourceType = require('../util/ajax').ResourceType;
 const browser = require('../util/browser');
 
 import type {Source} from './source';
-import type TileCoord from './tile_coord';
+import type {OverscaledTileID} from './tile_id';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';

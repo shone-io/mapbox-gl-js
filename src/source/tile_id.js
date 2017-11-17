@@ -7,6 +7,7 @@ class CanonicalTileID {
     z: number;
     x: number;
     y: number;
+	id: number; // TODO
 
     constructor(z: number, x: number, y: number) {
         assert(0 <= z && z <= 25);
@@ -15,6 +16,11 @@ class CanonicalTileID {
         this.z = z;
         this.x = x;
         this.y = y;
+
+		// TODO remove?
+		// calculate id
+        const dim = 1 << this.z;
+        this.id = (dim * this.y + this.x) * 32 + this.z;
     }
 
     equals(id: CanonicalTileID) {
@@ -117,6 +123,10 @@ class OverscaledTileID {
     toUnwrapped() {
         // TODO remove?
         return new UnwrappedTileID(this.wrap, this.canonical);
+    }
+
+    toString() {
+        return `${this.overscaledZ}/${this.canonical.x}/${this.canonical.y}`;
     }
 }
 

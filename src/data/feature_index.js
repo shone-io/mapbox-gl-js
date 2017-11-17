@@ -208,7 +208,7 @@ class FeatureIndex {
             const sourceLayer = this.vtLayers[sourceLayerName];
             const feature = sourceLayer.feature(match.featureIndex);
 
-            if (!filter({zoom: this.coord.z}, feature)) continue;
+            if (!filter({zoom: this.tileID.overscaledZ}, feature)) continue;
 
             let geometry = null;
 

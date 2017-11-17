@@ -1,7 +1,6 @@
 // @flow
 
 const pattern = require('./pattern');
-const TileCoord = require('../source/tile_coord');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';

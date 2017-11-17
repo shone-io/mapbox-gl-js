@@ -3,7 +3,6 @@
 const createSource = require('./source').create;
 const Tile = require('./tile');
 const Evented = require('../util/evented');
-const TileCoord = require('./tile_coord');
 const Cache = require('../util/lru_cache');
 const Coordinate = require('../geo/coordinate');
 const util = require('../util/util');
@@ -259,7 +258,7 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Get a specific tile by TileCoordinate
+     * Get a specific tile by TileID 
      */
     getTile(tileID: OverscaledTileID): Tile {
         return this.getTileByID(tileID.id);
@@ -371,14 +370,14 @@ class SourceCache extends Evented {
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
 
-        let idealTileCoords;
+        let idealTileIDs;
         if (!this.used) {
-            idealTileCoords = [];
+            idealTileIDs = [];
         } else if (this._source.tileID) {
-            idealTileCoords = transform.getVisibleUnwrappedCoordinates((this._source.tileID: any))
+            idealTileIDs = transform.getVisibleUnwrappedCoordinates((this._source.tileID: any))
                 .map((unwrapped) => new OverscaledTileID(unwrapped.canonical.z, unwrapped.wrap, unwrapped.canonical));
         } else {
-            idealTileCoords = transform.coveringTiles({
+            idealTileIDs = transform.coveringTiles({
                 tileSize: this._source.tileSize,
                 minzoom: this._source.minzoom,
                 maxzoom: this._source.maxzoom,
@@ -387,7 +386,7 @@ class SourceCache extends Evented {
             });
 
             if (this._source.hasTile) {
-                idealTileCoords = idealTileCoords.filter((coord) => (this._source.hasTile: any)(coord));
+                idealTileIDs = idealTileIDs.filter((coord) => (this._source.hasTile: any)(coord));
             }
         }
 
@@ -399,7 +398,7 @@ class SourceCache extends Evented {
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like
         // parent or child tiles that are *already* loaded.
-        const retain = this._updateRetainedTiles(idealTileCoords, zoom);
+        const retain = this._updateRetainedTiles(idealTileIDs, zoom);
 
         const parentsForFading = {};
 
@@ -408,7 +407,7 @@ class SourceCache extends Evented {
             for (let k = 0; k < ids.length; k++) {
                 const id = ids[k];
                 const coord = retain[id];
-                assert(coord.id === id);
+                assert(coord.id === +id);
                 const tile = this._tiles[id];
                 if (!tile) continue;
 
@@ -445,16 +444,14 @@ class SourceCache extends Evented {
         }
     }
 
-    _updateRetainedTiles(idealTileCoords: Array<OverscaledTileID>, zoom: number): { [string]: OverscaledTileID} {
-        let i, coord, tile, covered;
+    _updateRetainedTiles(idealTileIDs: Array<OverscaledTileID>, zoom: number): { [string]: OverscaledTileID} {
         const retain = {};
         const checked: {[number]: boolean } = {};
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
 
-
-        for (i = 0; i < idealTileCoords.length; i++) {
-            coord = idealTileCoords[i];
-            tile = this._addTile(coord);
+        for (let i = 0; i < idealTileIDs.length; i++) {
+            const coord = idealTileIDs[i];
+            let tile = this._addTile(coord);
             let parentWasRequested = false;
             if (tile.hasData()) {
                 retain[coord.id] = coord;
@@ -469,7 +466,7 @@ class SourceCache extends Evented {
 
                 // The tile isn't loaded yet, but retain it anyway because it's an ideal tile.
                 retain[coord.id] = coord;
-                covered = true;
+                let covered = true;
                 const overscaledZ = zoom + 1;
                 if (overscaledZ > this._source.maxzoom) {
                     // We're looking for an overzoomed child tile.
@@ -497,7 +494,7 @@ class SourceCache extends Evented {
                 if (!covered) {
 
                     // We couldn't find child tiles that entirely cover the ideal tile.
-                    for (let overscaledZ = zoom - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
+                    for (let overscaledZ = coord.overscaledZ - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
 
                         const parentId = coord.scaledTo(overscaledZ);
                         if (checked[parentId.id]) {
@@ -666,11 +663,11 @@ class SourceCache extends Evented {
 
         for (let i = 0; i < ids.length; i++) {
             const tile = this._tiles[ids[i]];
-            const coord = TileCoord.fromID(ids[i]);
+            const tileID = tile.tileID;
 
             const tileSpaceBounds = [
-                coordinateToTilePoint(coord, tile.sourceMaxZoom, new Coordinate(minX, minY, z)),
-                coordinateToTilePoint(coord, tile.sourceMaxZoom, new Coordinate(maxX, maxY, z))
+                coordinateToTilePoint(tileID, new Coordinate(minX, minY, z)),
+                coordinateToTilePoint(tileID, new Coordinate(maxX, maxY, z))
             ];
 
             if (tileSpaceBounds[0].x < EXTENT && tileSpaceBounds[0].y < EXTENT &&
@@ -678,12 +675,12 @@ class SourceCache extends Evented {
 
                 const tileSpaceQueryGeometry = [];
                 for (let j = 0; j < queryGeometry.length; j++) {
-                    tileSpaceQueryGeometry.push(coordinateToTilePoint(coord, tile.sourceMaxZoom, queryGeometry[j]));
+                    tileSpaceQueryGeometry.push(coordinateToTilePoint(tileID, queryGeometry[j]));
                 }
 
                 tileResults.push({
                     tile: tile,
-                    coord: coord,
+                    tileID: tileID,
                     queryGeometry: [tileSpaceQueryGeometry],
                     scale: Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ)
                 });
@@ -718,11 +715,11 @@ SourceCache.maxUnderzooming = 3;
  * Convert a coordinate to a point in a tile's coordinate space.
  * @private
  */
-function coordinateToTilePoint(tileCoord: TileCoord, sourceMaxZoom: number, coord: Coordinate): Point {
-    const zoomedCoord = coord.zoomTo(Math.min(tileCoord.z, sourceMaxZoom));
+function coordinateToTilePoint(tileID: OverscaledTileID, coord: Coordinate): Point {
+    const zoomedCoord = coord.zoomTo(tileID.canonical.z);
     return new Point(
-        (zoomedCoord.column - (tileCoord.x + tileCoord.w * Math.pow(2, tileCoord.z))) * EXTENT,
-        (zoomedCoord.row - tileCoord.y) * EXTENT
+        (zoomedCoord.column - (tileID.canonical.x + tileID.wrap * Math.pow(2, tileID.canonical.z))) * EXTENT,
+        (zoomedCoord.row - tileID.canonical.y) * EXTENT
     );
 }
 
