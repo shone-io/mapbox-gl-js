@@ -1,14 +1,15 @@
 // @flow
 
 const Layout = require('./layout');
-const TileCoord = require('../../src/source/tile_coord');
+const OverscaledTileID = require('../../src/source/tile_id').OverscaledTileID;
+const CanonicalTileID = require('../../src/source/tile_id').CanonicalTileID;
 
 const LAYER_COUNT = 2;
 
 module.exports = class LayoutDDS extends Layout {
-    tileCoords(): Array<TileCoord> {
+    tileIDs(): Array<OverscaledTileID> {
         return [
-            new TileCoord(15, 9373, 12535)
+            new OverscaledTileID(15, 0, new CanonicalTileID(15, 9373, 12535))
         ];
     }
 
