@@ -1,0 +1,45 @@
+// @flow
+
+'use strict';
+
+const test = require('mapbox-gl-js-test').test;
+const {register, serialize, deserialize} = require('../../../src/util/web_worker_transfer');
+
+test('round trip', (t) => {
+    class Foo {
+        n/*: number*/;
+        buffer/*: ArrayBuffer*/;
+        _cached/*: ?number*/;
+
+        constructor(n) {
+            this.n = n;
+            this.buffer = new ArrayBuffer(100);
+            this.squared();
+        }
+
+        squared() {
+            if (this._cached) {
+                return this._cached;
+            }
+            this._cached = this.n * this.n;
+            return this._cached;
+        }
+    }
+
+    register(Foo, { omit: ['_cached'] });
+
+    const foo = new Foo(10);
+    const transferables = [];
+    const deserialized = deserialize(serialize(foo, transferables));
+    t.assert(deserialized instanceof Foo);
+    const bar/*: Foo*/ = (deserialized/*: any*/);
+
+    t.assert(foo !== bar);
+    t.assert(bar.constructor === Foo);
+    t.assert(bar.n === 10);
+    t.assert(bar.buffer === foo.buffer);
+    t.assert(transferables[0] === foo.buffer);
+    t.assert(bar._cached === undefined);
+    t.assert(bar.squared() === 100);
+    t.end();
+});
