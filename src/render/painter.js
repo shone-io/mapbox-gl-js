@@ -31,7 +31,7 @@ const draw = {
 
 import type Transform from '../geo/transform';
 import type Tile from '../source/tile';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type LineAtlas from './line_atlas';
@@ -231,7 +231,7 @@ class Painter {
         gl.clear(gl.DEPTH_BUFFER_BIT);
     }
 
-    _renderTileClippingMasks(coords: Array<TileCoord>) {
+    _renderTileClippingMasks(coords: Array<OverscaledTileID>) {
         const gl = this.gl;
         gl.colorMask(false, false, false, false);
         this.depthMask(false);
@@ -264,7 +264,7 @@ class Painter {
         gl.enable(gl.DEPTH_TEST);
     }
 
-    enableTileClippingMask(coord: TileCoord) {
+    enableTileClippingMask(coord: OverscaledTileID) {
         const gl = this.gl;
         gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xFF);
     }
@@ -451,7 +451,7 @@ class Painter {
         }
     }
 
-    renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
+    renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
         if (layer.type !== 'background' && !coords.length) return;
         this.id = layer.id;

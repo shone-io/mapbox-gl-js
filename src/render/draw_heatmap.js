@@ -8,11 +8,11 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type HeatmapStyleLayer from '../style/style_layer/heatmap_style_layer';
 import type HeatmapBucket from '../data/bucket/heatmap_bucket';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 
 module.exports = drawHeatmap;
 
-function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapStyleLayer, coords: Array<TileCoord>) {
+function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.isOpaquePass) return;
     if (layer.isOpacityZero(painter.transform.zoom)) return;
 

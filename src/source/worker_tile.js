@@ -10,7 +10,7 @@ const assert = require('assert');
 const {makeImageAtlas} = require('../render/image_atlas');
 const {makeGlyphAtlas} = require('../render/glyph_atlas');
 
-import type TileCoord from './tile_coord';
+import type {OverscaledTileID} from './tile_id';
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
@@ -22,7 +22,7 @@ import type {
 } from '../source/worker_source';
 
 class WorkerTile {
-    coord: TileCoord;
+    tileID: OverscaledTileID;
     uid: string;
     zoom: number;
     pixelRatio: number;
@@ -40,7 +40,7 @@ class WorkerTile {
     vectorTile: VectorTile;
 
     constructor(params: WorkerTileParameters) {
-        this.coord = params.coord;
+        this.tileID = params.tileID;
         this.uid = params.uid;
         this.zoom = params.zoom;
         this.pixelRatio = params.pixelRatio;
@@ -57,7 +57,7 @@ class WorkerTile {
         this.collisionBoxArray = new CollisionBoxArray();
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
-        const featureIndex = new FeatureIndex(this.coord, this.overscaling);
+        const featureIndex = new FeatureIndex(this.tileID, this.overscaling);
         featureIndex.bucketLayerIDs = [];
 
         const buckets: {[string]: Bucket} = {};

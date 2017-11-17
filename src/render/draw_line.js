@@ -7,9 +7,9 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type LineBucket from '../data/bucket/line_bucket';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 
-module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<TileCoord>) {
+module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.isOpacityZero(painter.transform.zoom)) return;
     painter.setDepthSublayer(0);
@@ -37,13 +37,13 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
         const prevProgram = painter.currentProgram;
         const program = painter.useProgram(programId, programConfiguration);
         const programChanged = firstTile || program !== prevProgram;
-        const tileRatioChanged = prevTileZoom !== tile.coord.z;
+        const tileRatioChanged = prevTileZoom !== tile.tileID.overscaledZ;
 
         if (programChanged) {
             programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
         }
         drawLineTile(program, painter, tile, bucket, layer, coord, programConfiguration, programChanged, tileRatioChanged);
-        prevTileZoom = tile.coord.z;
+        prevTileZoom = tile.tileID.overscaledZ;
         firstTile = false;
     }
 };

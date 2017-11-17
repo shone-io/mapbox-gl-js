@@ -1,6 +1,6 @@
 // @flow
 
-import type TileCoord from './tile_coord';
+import type {OverscaledTileID} from './tile_id';
 import type {SerializedBucket} from '../data/bucket';
 import type {SerializedFeatureIndex} from '../data/feature_index';
 import type {SerializedStructArray} from '../util/struct_array';
@@ -13,7 +13,7 @@ export type TileParameters = {
 };
 
 export type WorkerTileParameters = TileParameters & {
-    coord: TileCoord,
+    tileID: OverscaledTileID,
     request: RequestParameters,
     zoom: number,
     maxZoom: number,

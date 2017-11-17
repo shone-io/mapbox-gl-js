@@ -226,8 +226,8 @@ class ImageSource extends Evented implements Source {
         // `errored` to indicate that we have no data for it.
         // If the world wraps, we may have multiple "wrapped" copies of the
         // single tile.
-        if (this.tileID && this.tileID.equals(tile.coord.toUnwrapped().canonical)) {
-            this.tiles[String(tile.coord.w)] = tile;
+        if (this.tileID && this.tileID.equals(tile.tileID.canonical)) {
+            this.tiles[String(tile.tileID.wrap)] = tile;
             tile.buckets = {};
             callback(null);
         } else {

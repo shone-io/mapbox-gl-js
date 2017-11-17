@@ -6,11 +6,11 @@ const ImageSource = require('../source/image_source');
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 
 module.exports = drawRaster;
 
-function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<TileCoord>) {
+function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<OverscaledTileID>) {
     const zoom = painter.transform.zoom;
     if (painter.renderPass !== 'translucent') return;
     if (layer.isOpacityZero(zoom)) return;
@@ -36,14 +36,14 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     gl.uniform1i(program.uniforms.u_image0, 0);
     gl.uniform1i(program.uniforms.u_image1, 1);
 
-    const minTileZ = coords.length && coords[0].z;
+    const minTileZ = coords.length && coords[0].overscaledZ;
 
     for (const coord of coords) {
         // set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
-        painter.setDepthSublayer(coord.z - minTileZ);
+        painter.setDepthSublayer(coord.overscaledZ - minTileZ);
 
         const tile = sourceCache.getTile(coord);
-        const posMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped(sourceCache.getSource().maxzoom));
+        const posMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped());
 
         tile.registerFadeDuration(painter.style.animationLoop, layer.getPaintValue('raster-fade-duration', {zoom: zoom}));
 
@@ -61,8 +61,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         if (parentTile) {
             parentTile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
-            parentScaleBy = Math.pow(2, parentTile.coord.z - tile.coord.z);
-            parentTL = [tile.coord.x * parentScaleBy % 1, tile.coord.y * parentScaleBy % 1];
+            parentScaleBy = Math.pow(2, parentTile.tileID.overscaledZ - tile.tileID.overscaledZ);
+            parentTL = [tile.tileID.canonical.x * parentScaleBy % 1, tile.tileID.canonical.y * parentScaleBy % 1];
 
         } else {
             tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
@@ -138,7 +138,7 @@ function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
         });
 
         // if no parent or parent is older, fade in; if parent is younger, fade out
-        const fadeIn = !parentTile || Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ);
+        const fadeIn = !parentTile || Math.abs(parentTile.tileID.overscaledZ - idealZ) > Math.abs(tile.tileID.overscaledZ - idealZ);
 
         const childOpacity = (fadeIn && tile.refreshedUponExpiration) ? 1 : util.clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
 

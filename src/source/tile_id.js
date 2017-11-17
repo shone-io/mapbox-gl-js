@@ -1,5 +1,6 @@
 // @flow
 
+const WhooTS = require('@mapbox/whoots-js');
 const assert = require('assert');
 
 class CanonicalTileID {
@@ -19,6 +20,20 @@ class CanonicalTileID {
     equals(id: CanonicalTileID) {
         return this.z === id.z && this.x === id.x && this.y === id.y;
     }
+
+	// given a list of urls, choose a url template and return a tile URL
+    url(urls: Array<string>, scheme: ?string) {
+        const bbox = WhooTS.getTileBBox(this.x, this.y, this.z);
+        const quadkey = getQuadkey(this.z, this.x, this.y);
+
+        return urls[(this.x + this.y) % urls.length]
+            .replace('{prefix}', (this.x % 16).toString(16) + (this.y % 16).toString(16))
+            .replace('{z}', String(this.z))
+            .replace('{x}', String(this.x))
+            .replace('{y}', String(scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y))
+            .replace('{quadkey}', quadkey)
+            .replace('{bbox-epsg-3857}', bbox);
+    }
 }
 
 class OverscaledTileID {
@@ -26,6 +41,7 @@ class OverscaledTileID {
     wrap: number;
     canonical: CanonicalTileID;
 	id: number; // TODO
+    posMatrix: Float32Array;
 
     constructor(overscaledZ: number, wrap: number, canonical: CanonicalTileID) {
         assert(overscaledZ >= canonical.z);
@@ -50,11 +66,6 @@ class OverscaledTileID {
                     new CanonicalTileID(targetZ, this.canonical.x >> zDifference, this.canonical.y >> zDifference));
     }
 
-	/**
-	 * @param {OverscaledTileID} parent id that is potentially a parent of this id
-	 * @returns {boolean} result boolean describing whether or not `child` is a child tile of the root
-	 * @private
-	 */
 	isChildOf(parent: OverscaledTileID) {
         const zDifference = this.canonical.z - parent.canonical.z;
 		// We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
@@ -63,6 +74,50 @@ class OverscaledTileID {
                 parent.canonical.x === (this.canonical.x >> zDifference) &&
                 parent.canonical.y === (this.canonical.y >> zDifference));
 	}
+
+    children(sourceMaxZoom: number) {
+		if (this.overscaledZ >= sourceMaxZoom) {
+			// return a single tile coord representing a an overscaled tile
+			return [new OverscaledTileID(this.overscaledZ + 1, this.wrap, this.canonical)];
+		}
+
+		const z = this.canonical.z + 1;
+		const x = this.canonical.x * 2;
+		const y = this.canonical.y * 2;
+		return [
+			new OverscaledTileID(z, this.wrap, new CanonicalTileID(z, x, y)),
+			new OverscaledTileID(z, this.wrap, new CanonicalTileID(z, x + 1, y)),
+			new OverscaledTileID(z, this.wrap, new CanonicalTileID(z, x, y + 1)),
+			new OverscaledTileID(z, this.wrap, new CanonicalTileID(z, x + 1, y + 1))
+		];
+    }
+
+    isLessThan(rhs: OverscaledTileID) {
+        if (this.wrap < rhs.wrap) return true;
+        if (this.wrap > rhs.wrap) return false;
+
+        if (this.overscaledZ < rhs.overscaledZ) return true;
+        if (this.overscaledZ > rhs.overscaledZ) return false;
+
+        if (this.canonical.x < rhs.canonical.x) return true;
+        if (this.canonical.x > rhs.canonical.x) return false;
+
+        if (this.canonical.y < rhs.canonical.y) return true;
+        return false;
+    }
+
+    wrapped() {
+        return new OverscaledTileID(this.overscaledZ, 0, this.canonical);
+    }
+
+    overscaleFactor() {
+        return Math.pow(2, this.overscaledZ - this.canonical.z);
+    }
+
+    toUnwrapped() {
+        // TODO remove?
+        return new UnwrappedTileID(this.wrap, this.canonical);
+    }
 }
 
 class UnwrappedTileID {
@@ -81,6 +136,15 @@ class UnwrappedTileID {
         const dim = 1 << canonical.z;
         this.id = ((dim * dim * wrap + dim * canonical.y + canonical.x) * 32) + canonical.z;
     }
+}
+
+function getQuadkey(z, x, y) {
+    let quadkey = '', mask;
+    for (let i = z; i > 0; i--) {
+        mask = 1 << (i - 1);
+        quadkey += ((x & mask ? 1 : 0) + (y & mask ? 2 : 0));
+    }
+    return quadkey;
 }
 
 module.exports = {
