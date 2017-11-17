@@ -2,7 +2,8 @@
 
 const test = require('mapbox-gl-js-test').test;
 const VectorTileSource = require('../../../src/source/vector_tile_source');
-const TileCoord = require('../../../src/source/tile_coord');
+const CanonicalTileID = require('../../../src/source/tile_id').CanonicalTileID;
+const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
 const window = require('../../../src/util/window');
 const Evented = require('../../../src/util/evented');
 
@@ -153,7 +154,9 @@ test('VectorTileSource', (t) => {
             };
 
             source.on('data', (e) => {
-                if (e.sourceDataType === 'metadata') source.loadTile({coord: new TileCoord(10, 5, 5, 0)}, () => {});
+                if (e.sourceDataType === 'metadata') source.loadTile({
+                    tileID: new OverscaledTileID(10, 0, new CanonicalTileID(10, 5, 5))
+                }, () => {});
             });
         });
     }
@@ -169,7 +172,7 @@ test('VectorTileSource', (t) => {
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {
-                    coord: new TileCoord(10, 5, 5, 0),
+                    tileID: new OverscaledTileID(10, 0, new CanonicalTileID(10, 5, 5)),
                     state: 'loading',
                     loadVectorData: function () {},
                     setExpiryData: function() {}
@@ -199,7 +202,7 @@ test('VectorTileSource', (t) => {
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {
-                    coord: new TileCoord(10, 5, 5, 0),
+                    tileID: new OverscaledTileID(10, 0, new CanonicalTileID(10, 5, 5)),
                     state: 'loading',
                     loadVectorData: function () {
                         this.state = 'loaded';
@@ -227,8 +230,8 @@ test('VectorTileSource', (t) => {
         });
         source.on('data', (e)=>{
             if (e.sourceDataType === 'metadata') {
-                t.false(source.hasTile({z: 8, x:96, y: 132}), 'returns false for tiles outside bounds');
-                t.true(source.hasTile({z: 8, x:95, y: 132}), 'returns true for tiles inside bounds');
+                t.false(source.hasTile(new OverscaledTileID(8, 0, new CanonicalTileID(8, 96, 132))), 'returns false for tiles outside bounds');
+                t.true(source.hasTile(new OverscaledTileID(8, 0, new CanonicalTileID(8, 95, 132))), 'returns true for tiles inside bounds');
                 t.end();
             }
         });
@@ -263,8 +266,8 @@ test('VectorTileSource', (t) => {
 
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
-                t.false(source.hasTile({z: 8, x:96, y: 132}), 'returns false for tiles outside bounds');
-                t.true(source.hasTile({z: 8, x:95, y: 132}), 'returns true for tiles inside bounds');
+                t.false(source.hasTile(new OverscaledTileID(8, 0, new CanonicalTileID(8, 96, 132))), 'returns false for tiles outside bounds');
+                t.true(source.hasTile(new OverscaledTileID(8, 0, new CanonicalTileID(8, 95, 132))), 'returns true for tiles inside bounds');
                 t.end();
             }
         });

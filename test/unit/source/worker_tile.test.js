@@ -3,7 +3,8 @@
 const test = require('mapbox-gl-js-test').test;
 const WorkerTile = require('../../../src/source/worker_tile');
 const Wrapper = require('../../../src/source/geojson_wrapper');
-const TileCoord = require('../../../src/source/tile_coord');
+const CanonicalTileID = require('../../../src/source/tile_id').CanonicalTileID;
+const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
 const StyleLayerIndex = require('../../../src/style/style_layer_index');
 const util = require('../../../src/util/util');
 
@@ -14,7 +15,7 @@ function createWorkerTile() {
         maxZoom: 20,
         tileSize: 512,
         source: 'source',
-        coord: new TileCoord(1, 1, 1),
+        tileID: new OverscaledTileID(1, 0, new CanonicalTileID(1, 1, 1)),
         overscaling: 1
     });
 }
