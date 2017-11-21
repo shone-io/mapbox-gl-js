@@ -31,8 +31,8 @@ class IndexBuffer {
         // The bound index buffer is part of vertex array object state. We don't want to
         // modify whatever VAO happens to be currently bound, so make sure the default
         // vertex array provided by the context is bound instead.
-        if (context.extVertexArrayObject) {
-            context.bindVertexArrayOES.set(null);
+        if (this.context.extVertexArrayObject) {
+            this.context.bindVertexArrayOES.set(null);
         }
         // if (this.gl.extVertexArrayObject === undefined) {
         //     (this.gl: any).extVertexArrayObject = this.gl.getExtension("OES_vertex_array_object");

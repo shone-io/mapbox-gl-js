@@ -115,7 +115,7 @@ class ConstantBinder<T> implements Binder<T> {
                 globals: GlobalProperties,
                 currentValue: PossiblyEvaluatedPropertyValue<T>) {
         const value: any = currentValue.constantOr(this.value);
-        const gl = context.gl; // TODO
+        const gl = context.gl;
         if (this.type === 'color') {
             gl.uniform4f(program.uniforms[`u_${this.name}`], value.r, value.g, value.b, value.a);
         } else {

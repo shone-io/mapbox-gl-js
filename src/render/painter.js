@@ -202,32 +202,28 @@ class Painter {
         }
     }
 
-    // TODO move to context -- easier to leave here during rebase
     /*
      * Reset the drawing canvas by clearing the stencil buffer so that we can draw
      * new tiles at the same location, while retaining previously drawn pixels.
      */
     clearStencil() {
-        const gl = this.context.gl;
+        const context = this.context;
+        const gl = context.gl;
 
         // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
-        // effectively clearing the stencil buffer: restore this code for native
-        // performance and readability once an upstream patch lands.
+        // effectively clearing the stencil buffer: once an upstream patch lands, remove
+        // this function in favor of context.clear({ stencil: 0x0 })
 
-        // gl.clearStencil(0x0);
-        // gl.stencilMask(0xFF);
-        // gl.clear(gl.STENCIL_BUFFER_BIT);
+        context.colorMask.set([false, false, false, false]);
+        context.depthMask.set(false);
+        context.depthTest.set(false);
+        context.stencilTest.set(true);
 
-        gl.colorMask(false, false, false, false);
-        this.depthMask(false);
-        gl.disable(gl.DEPTH_TEST);
-        gl.enable(gl.STENCIL_TEST);
+        context.stencilMask.set(0xFF);
+        context.stencilOp.set([gl.ZERO, gl.ZERO, gl.ZERO]);
 
-        gl.stencilMask(0xFF);
-        gl.stencilOp(gl.ZERO, gl.ZERO, gl.ZERO);
-
-        gl.stencilFunc(gl.ALWAYS, 0x0, 0xFF);
+        context.stencilFunc.set({ func: gl.ALWAYS, ref: 0x0, mask: 0xFF });
 
         const matrix = mat4.create();
         mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
@@ -236,13 +232,13 @@ class Painter {
         const program = this.useProgram('fill', ProgramConfiguration.forTileClippingMask());
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
 
-        this.viewportVAO.bind(gl, program, this.viewportBuffer);
+        this.viewportVAO.bind(context, program, this.viewportBuffer);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-        gl.stencilMask(0x00);
-        gl.colorMask(true, true, true, true);
-        this.depthMask(true);
-        gl.enable(gl.DEPTH_TEST);
+        context.stencilMask.set(0x00);
+        context.colorMask.set([true, true, true, true]);
+        context.depthMask.set(true);
+        context.depthTest.set(true);
     }
 
     _renderTileClippingMasks(coords: Array<TileCoord>) {
@@ -341,8 +337,6 @@ class Painter {
                     coords = [];
 
                     if (sourceCache) {
-                        // context.clear({ stencil: 0x0 });    // TODO in native, 0 is the default; somehow we should be able to remove value the arg here?
-                        // TODO move to context post-rebase
                         this.clearStencil();
                         coords = sourceCache.getVisibleCoordinates();
                     }
@@ -397,8 +391,7 @@ class Painter {
                     coords = [];
 
                     if (sourceCache) {
-                        // context.clear({ stencil: 0x0 });
-                        this.clearStencil();    // TODO move to context post-rebase
+                        this.clearStencil();
                         coords = sourceCache.getVisibleCoordinates();
                         if (sourceCache.getSource().isTileClipped) {
                             this._renderTileClippingMasks(coords);
@@ -429,8 +422,7 @@ class Painter {
                     coords = [];
 
                     if (sourceCache) {
-                        // context.clear({ stencil: 0x0 });
-                        this.clearStencil();    // TODO move into context post rebase
+                        this.clearStencil();
                         coords = sourceCache.getVisibleCoordinates();
                         if (sourceCache.getSource().isTileClipped) {
                             this._renderTileClippingMasks(coords);
@@ -561,8 +553,6 @@ class Painter {
         const nextProgram = this._createProgramCached(name, programConfiguration || this.emptyProgramConfiguration);
 
         this.context.program.set(nextProgram.program);
-        // TODO previously we compared Program objects for equality,
-        // not WebGLPrograms. Does this matter/should we track Programs as state rather than WebGLPrograms?
 
         return nextProgram;
     }
